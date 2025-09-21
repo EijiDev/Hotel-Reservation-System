@@ -4,7 +4,6 @@
         <div class="context">
             <h1>Log in</h1>
             <p>Enter your credentials to access your account</p>
-
             <form class="form" method="POST" action="">
                 <label for="email">Email</label>
                 <input type="email" id="email" name="email" placeholder="example123@example.com" required />

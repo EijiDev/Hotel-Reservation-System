@@ -3,7 +3,7 @@
 <body>
   <div class="signup-container">
     <h1>Sign Up</h1>
-    <form class="form" id="signupForm" method="POST" action="../Controllers/AuthController.php?action=register">
+    <form class="form" id="signupForm" method="POST" action="/Hotel_Reservation_System/app/public/index.php?action=signup">
       <label for="name">Name</label>
       <input type="text" id="name" name="name" placeholder="e.g. Fernando Junio" required />
 
