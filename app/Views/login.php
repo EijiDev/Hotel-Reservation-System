@@ -1,10 +1,11 @@
 <link rel="stylesheet" href="../public/css/login.style.css">
+<title>Login</title>
 <body>
     <div class="login-container">
         <div class="context">
             <h1>Log in</h1>
             <p>Enter your credentials to access your account</p>
-            <form class="form" method="POST" action="">
+            <form class="form" method="POST" action="/Hotel_Reservation_System/app/public/index.php?action=login">
                 <label for="email">Email</label>
                 <input type="email" id="email" name="email" placeholder="example123@example.com" required />
 

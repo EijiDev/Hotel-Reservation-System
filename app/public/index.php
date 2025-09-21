@@ -8,6 +8,7 @@ require_once __DIR__ . "/../Models/User.php";
 require_once __DIR__ . "/../Controllers/HomeController.php";
 require_once __DIR__ . "/../Controllers/LoginController.php";
 require_once __DIR__ . "/../Controllers/SignUpController.php";
+require_once __DIR__ . "/../middleware/AuthMiddleware.php";
 
 // Connect database
 $db = (new Database())->connect();
@@ -21,6 +22,7 @@ $SignUpController = new SignUpController($userModel);
 // Handle routing
 $controllerName = $_GET['controller'] ?? 'home';
 $action = $_GET['action'] ?? 'index';
+
 if ($action === 'login' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $loginController->login($_POST['email'], $_POST['password']);
 } elseif ($action === 'signup' && $_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -35,5 +37,5 @@ if ($action === 'login' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 if (method_exists($controller, $action)) {
     $controller->$action();
 } else {
-    echo "Error: Action '$action' not found in $controllerName controller.";
+    echo "Error: Action '$action' not found in " . get_class($controller) . " controller.";
 }

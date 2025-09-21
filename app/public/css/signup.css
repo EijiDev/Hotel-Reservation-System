@@ -1,7 +1,7 @@
 body {
   background-color: #fff6f6;
   margin: 0;
-  height: 100vh; /* full screen */
+  height: 100vh; 
   display: flex;
   justify-content: center;
   align-items: center;
@@ -12,7 +12,6 @@ body {
   background-color: #fff6f6;
   padding: 40px;
   border-radius: 10px;
-  border: 1px solid #d4d3d3;
   width: 400px;
   max-width: 380px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);

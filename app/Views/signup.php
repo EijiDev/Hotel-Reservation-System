@@ -1,5 +1,5 @@
 <link rel="stylesheet" href="../public/css/signup.css">
-
+<title>Signup</title>
 <body>
   <div class="signup-container">
     <h1>Sign Up</h1>

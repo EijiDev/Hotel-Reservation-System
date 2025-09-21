@@ -25,7 +25,7 @@
                 </div>
                 <div class="card-footer">
                     <div class="card-price">$380<span class="card-day">/night</span></div>
-                    <a href="#" class="book-now-btn">Book Now</a>
+                    <a href="../views/roombookings.php" class="book-now-btn">Book Now</a>
                 </div>
             </div>
         </div>

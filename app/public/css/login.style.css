@@ -12,21 +12,12 @@ body {
     background-color: #fff6f6;
     padding: 40px;
     border-radius: 10px;
-    border: 1px solid #d4d3d3;
     width: 400px;
     max-width: 380px;
     position: relative;
     box-shadow: 0 5px 15px rgba(0,0,0,0.1);
 }
   
-.close-btn {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    font-size: 1.5rem;
-    cursor: pointer;
-}
-
 .form {
     display: flex;
     flex-direction: column;
@@ -39,7 +30,7 @@ label {
 }
   
 input {
-    padding: 10px;
+    padding: 12px;
     font-size: 1rem;
     border: 2px solid #d1d1d1;
     border-radius: 5px;
@@ -76,10 +67,11 @@ input:focus {
     text-decoration: none;
 }
 
-h1 {
+h1, p {
     text-align: center;
 }
 
 a {
     text-decoration: underline;
 }
+
