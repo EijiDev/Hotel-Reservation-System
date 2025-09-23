@@ -1,1 +1,3 @@
 *.php linguist-language=PHP
+path/to/file.php linguist-language=PHP
+vendor/* linguist-vendored
