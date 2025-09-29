@@ -1,4 +1,4 @@
-
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="stylesheet" href="css/rooms.style.css">
 <!-- Rooms Section -->
 <section class="rooms">
@@ -8,7 +8,7 @@
     <div class="room-grid">
 
         <!-- Room 1 -->
-        <div class="room-card" data-aos="zoom-in">
+        <div class="room-card">
             <img src="./assets/room1.png" alt="Comfort Twin Bed Room">
             <div class="card-content">
                 <div class="card-header">
@@ -16,18 +16,20 @@
                     <span class="rating">4.8</span>
                 </div>
                 <p class="card-details">Floor 1 | Room ID: 101</p>
-                <div class="availability">Available</div>
+                <div class="availability">
+                    <i class="fa-solid fa-check available-icon"></i>Available
+                </div>
                 <p class="card-description">Experience unparalleled luxury and comfort in the heart of the city. The Grand Plaza offers breathtaking views and world-class service.</p>
                 <div class="features">
-                    <span class="feature-item" data-icon="📶">WiFi</span>
-                    <span class="feature-item" data-icon="🅿️">Parking</span>
-                    <span class="feature-item" data-icon="🏋️">Gym Access</span>
+                    <span class="feature-item"><i class="fa-solid fa-wifi"></i> WiFi</span>
+                    <span class="feature-item"><i class="fa-solid fa-square-parking"></i> Parking</span>
+                    <span class="feature-item"><i class="fa-solid fa-dumbbell"></i> Gym Access</span>
                 </div>
                 <div class="card-footer">
                     <div class="card-price">$380<span class="card-day">/night</span></div>
                     <a href="../views/roombookings.php" class="book-now-btn">Book Now</a>
                 </div>
-            </div>
+            </div> 
         </div>
 
         <!-- Room 2 -->
@@ -39,11 +41,13 @@
                     <span class="rating">4.9</span>
                 </div>
                 <p class="card-details">Floor 2 | Room ID: 102</p>
-                <div class="availability">Available</div>
+                <div class="availability">
+                    <i class="fa-solid fa-check available-icon"></i>Available
+                </div>
                 <p class="card-description">Your perfect beach getaway awaits. Enjoy stunning ocean views, a private beach, and resort-style pools.</p>
                 <div class="features">
-                    <span class="feature-item" data-icon="📶">WiFi</span>
-                    <span class="feature-item" data-icon="🏋️">Gym Access</span>
+                    <span class="feature-item"><i class="fa-solid fa-wifi"></i>WiFi</span>
+                    <span class="feature-item"><i class="fa-solid fa-dumbbell"></i>Gym Access</span>
                 </div>
                 <div class="card-footer">
                     <div class="card-price">$600<span class="card-day">/night</span></div>
@@ -61,11 +65,13 @@
                     <span class="rating">4.7</span>
                 </div>
                 <p class="card-details">Floor 3 | Room ID: 103</p>
-                <div class="availability">Available</div>
+                <div class="availability">
+                    <i class="fa-solid fa-check available-icon"></i>Available
+                </div>
                 <p class="card-description">Escape to the serene mountains. Our cozy retreat is perfect for adventure seekers and those looking for tranquility.</p>
                 <div class="features">
-                    <span class="feature-item" data-icon="📶">WiFi</span>
-                    <span class="feature-item" data-icon="🅿️">Parking</span>
+                    <span class="feature-item"><i class="fa-solid fa-wifi"></i>WiFi</span>
+                    <span class="feature-item"><i class="fa-solid fa-square-parking"></i>Parking</span>
                 </div>
                 <div class="card-footer">
                     <div class="card-price">$250<span class="card-day">/night</span></div>
@@ -83,12 +89,14 @@
                     <span class="rating">4.7</span>
                 </div>
                 <p class="card-details">Floor 1 | Room ID: 104</p>
-                <div class="availability">Available</div>
+                <div class="availability">
+                    <i class="fa-solid fa-check available-icon"></i>Available
+                </div>
                 <p class="card-description">A stylish and modern hotel in the bustling city center, steps away from major attractions and dining.</p>
                 <div class="features">
-                    <span class="feature-item" data-icon="📶">WiFi</span>
-                    <span class="feature-item" data-icon="🅿️">Parking</span>
-                    <span class="feature-item" data-icon="🏋️">Gym Access</span>
+                    <span class="feature-item"><i class="fa-solid fa-wifi"></i>WiFi</span>
+                    <span class="feature-item"><i class="fa-solid fa-square-parking"></i>Parking</span>
+                    <span class="feature-item"><i class="fa-solid fa-dumbbell"></i>Gym Access</span>
                 </div>
                 <div class="card-footer">
                     <div class="card-price">$450<span class="card-day">/night</span></div>
@@ -106,12 +114,14 @@
                     <span class="rating">4.9</span>
                 </div>
                 <p class="card-details">Floor 1 | Room ID: 105</p>
-                <div class="availability">Available</div>
+                <div class="availability">
+                    <i class="fa-solid fa-check available-icon"></i>Available
+                </div>
                 <p class="card-description">Find your inner peace in this tranquil room overlooking a beautiful Zen garden. Perfect for meditation and relaxation.</p>
                 <div class="features">
-                    <span class="feature-item" data-icon="📶">WiFi</span>
-                    <span class="feature-item" data-icon="🅿️">Parking</span>
-                    <span class="feature-item" data-icon="🏋️">Gym Access</span>
+                    <span class="feature-item"><i class="fa-solid fa-wifi"></i>WiFi</span>
+                    <span class="feature-item"><i class="fa-solid fa-square-parking"></i>Parking</span>
+                    <span class="feature-item"><i class="fa-solid fa-dumbbell"></i>Gym Access</span>
                 </div>
                 <div class="card-footer">
                     <div class="card-price">$380<span class="card-day">/night</span></div>
@@ -129,12 +139,14 @@
                     <span class="rating">5.0</span>
                 </div>
                 <p class="card-details">Floor 3 | Room ID: 105</p>
-                <div class="availability">Available</div>
+                <div class="availability">
+                    <i class="fa-solid fa-check available-icon"></i>Available
+                </div>
                 <p class="card-description">Indulge in the ultimate luxury. This top-floor suite offers panoramic city views, a private jacuzzi, and butler service.</p>
                 <div class="features">
-                    <span class="feature-item" data-icon="📶">WiFi</span>
-                    <span class="feature-item" data-icon="🅿️">Parking</span>
-                    <span class="feature-item" data-icon="🏋️">Gym Access</span>
+                    <span class="feature-item"><i class="fa-solid fa-wifi"></i>WiFi</span>
+                    <span class="feature-item"><i class="fa-solid fa-square-parking"></i>Parking</span>
+                    <span class="feature-item"><i class="fa-solid fa-dumbbell"></i>Gym Access</span>
                 </div>
                 <div class="card-footer">
                     <div class="card-price">$600<span class="card-day">/night</span></div>
