@@ -37,8 +37,8 @@ This project allows users to browse rooms, make bookings, and admins to manage i
 ## Tech Stack
 | Layer        | Technology              |
 |---------------|----------------------------|
-| Backend       | PHP (or your backend stack) |
+| Backend       | PHP |
 | Frontend      | HTML / CSS / JavaScript     |
-| Database      | MySQL / MariaDB (or any SQL DB)|
+| Database      | MySQL / MariaDB|
 | Authentication| Sessions / JWT |
 
