@@ -55,3 +55,15 @@ body {
   cursor: pointer;
   transition: background-color 0.3s ease-in-out;
 }
+
+#signup-btn {
+  background-color: transparent;
+  border: 1px solid white;
+  color: white;
+}
+
+#signup-btn:hover {
+  background-color: white;
+  color: black;
+}
+

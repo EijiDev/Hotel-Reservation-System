@@ -12,8 +12,8 @@
         <div class=" hero-container">
         <h1 class="main-header">Welcome to Lunera Hotel and Grill</h1>
         <p>Where comfort meets flavor, and every stay feels like home.</p>
-        <button>View Rooms</button>
-        <button>Sign up</button>
+        <button id="view-btn">View Rooms</button>
+        <button id="signup-btn">Sign up</button>
         </div>
     </section>
 

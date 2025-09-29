@@ -2,19 +2,28 @@
 <?php
 include_once __DIR__ . "/../Models/booking.php";
 
-class BookingController
-{
-    private $db;
+class BookingController {
+    private $bookingModel;
 
-    public function __construct($db)
-    {
-        $this->db = $db;
+    public function __construct($db) {
+        $this->bookingModel = new Booking($db);
     }
 
-    public function index()
-    {
-        include_once __DIR__ . "/../Views/home.php";
+    public function store() {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $checkin = $_POST['checkin'];
+            $checkout = $_POST['checkout'];
+            $guests = $_POST['guests'];
+            $checkin_time = $_POST['checkin_time'];
+            $contact = $_POST['contact'];
+            $email = $_POST['email'];
+            $payment_method = $_POST['payment_method'];
+
+            $this->bookingModel->create($checkin, $checkout, $guests, $checkin_time, $contact, $email, $payment_method);
+
+            // redirect after saving
+        header("Location: /Hotel_Reservation_System/app/public/index.php?controller=home&action=index&success=1");
+        exit();
+        }
     }
 }
-
-?>
