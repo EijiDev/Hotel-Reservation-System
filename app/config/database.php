@@ -1,4 +1,8 @@
 <?php
+namespace App\Config;
+use PDO;
+use PDOException;
+
 class Database
 {
     private $servername = "localhost";
@@ -19,8 +23,8 @@ class Database
         try {
             $pdo = new PDO($dsn, $this->dbusername, $this->dbpassword, $options);
             return $pdo;
-        } catch (\PDOException $e) {
-            throw new \PDOException($e->getMessage(), (int)$e->getCode());
+        } catch (PDOException $e) {
+            throw new PDOException($e->getMessage(), (int)$e->getCode());
         }
     }
 }

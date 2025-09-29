@@ -1,0 +1,15 @@
+{
+    "name": "ej/hotel_reservation_system",
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Ej",
+            "email": "jaysolis697@gmail.com"
+        }
+    ],
+    "require": {}
+}
