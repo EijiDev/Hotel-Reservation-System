@@ -9,6 +9,9 @@ require_once __DIR__ . "/../Controllers/HomeController.php";
 require_once __DIR__ . "/../Controllers/LoginController.php";
 require_once __DIR__ . "/../Controllers/SignUpController.php";
 require_once __DIR__ . "/../middleware/AuthMiddleware.php";
+require_once __DIR__ . "/../Models/Room.php";
+require_once __DIR__ . "/../Controllers/RoomController.php";
+
 
 // Connect database
 $db = (new Database())->connect();
@@ -29,6 +32,8 @@ if ($action === 'login' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $SignUpController->signup($_POST['name'], $_POST['email'], $_POST['password']);
 } elseif ($controllerName === 'booking') {
     $controller = new BookingController($db);
+} elseif ($controllerName === 'room') {
+    $controller = new RoomController($db);
 } else {
     $controller = new HomeController();
 }
