@@ -10,6 +10,10 @@ class Booking
     {
         $this->conn = $db;
     }
+
+    public function getBooking($db) {
+        $checkIn = $_POST['checkin'];
+    }
 }
 
 ?>
