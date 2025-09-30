@@ -1,15 +1,29 @@
 <?php
 namespace App\Config;
+
 use PDO;
 use PDOException;
+use Dotenv\Dotenv;
 
 class Database
 {
-    private $servername = "localhost";
-    private $dbusername = "root";
-    private $dbpassword = "";
-    private $dbname = "HotelReservationDB";
-    private $charset = 'utf8mb4';
+    private $servername;
+    private $dbusername;
+    private $dbpassword;
+    private $dbname;
+    private $charset;
+
+    public function __construct()
+    {
+        $dotenv = Dotenv::createImmutable(__DIR__ . '/../../');
+        $dotenv->load();
+
+        $this->servername = $_ENV['DB_HOST'];
+        $this->dbusername = $_ENV['DB_USER'];
+        $this->dbpassword = $_ENV['DB_PASS'];
+        $this->dbname     = $_ENV['DB_NAME'];
+        $this->charset    = $_ENV['DB_CHARSET'];
+    }
 
     public function connect()
     {
