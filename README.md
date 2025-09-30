@@ -93,6 +93,7 @@ Hotel_Reservation_System/
 ├── .env                # Environment variables
 ├── composer.json
 └── README.md
+
 📡 API Endpoints / Functionality
 GET /rooms → List all rooms
 
@@ -123,6 +124,6 @@ This project is licensed under the MIT License.
 📬 Contact
 👤 EijiDev
 
-GitHub: @yourusername
+GitHub: EijiDev
 
 Email: jaysolis697@gmail.com
