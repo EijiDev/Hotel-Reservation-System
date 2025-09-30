@@ -106,17 +106,6 @@ POST /register → User registration
 
 GET /admin/dashboard → Admin panel
 
-📸 Screenshots / Demo
-(Add screenshots here to make it visual!)
-
-🏠 Home Page
-
-🛏 Room Details
-
-📝 Booking Form
-
-📊 Admin Dashboard
-
 🤝 Contributing
 Contributions are welcome!
 
