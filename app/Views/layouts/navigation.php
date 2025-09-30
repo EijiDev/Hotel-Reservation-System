@@ -1,4 +1,4 @@
-<link rel="stylesheet" href="css/nav.css">
+<link rel="stylesheet" href="/Hotel_Reservation_System/app/public/css/nav.css">
 
 <nav class="navbar">
   <div class="navbar-left">
@@ -9,7 +9,7 @@
   </div>
 
   <ul class="navbar-menu">
-    <li><a href="#" class="nav-link">Home</a></li>
+    <li><a href="/Hotel_Reservation_System/app/public/index.php?controller=home&action=index" class="nav-link">Home</a></li>
     <li><a href="#" class="nav-link">Rooms</a></li>
     <li><a href="#" class="nav-link">Contact</a></li>
   </ul>
@@ -19,16 +19,6 @@
     <a href="../views/login.php" class="btn-gradient">Log in</a>
   </div>
 </nav>
-
-
-
-
-
-
-
-
-
-
 
 <script>
   window.addEventListener("scroll", function() {

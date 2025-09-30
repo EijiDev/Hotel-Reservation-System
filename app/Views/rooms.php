@@ -10,15 +10,15 @@
         <?php if (!empty($rooms)): ?>
             <?php foreach ($rooms as $room): ?>
                 <div class="room-card">
-                    <img src="./assets/<?= htmlspecialchars($room['image']) ?>" 
-                         alt="<?= htmlspecialchars($room['name']) ?>">
+                    <img src="./assets/<?= htmlspecialchars($room['image']) ?>"
+                        alt="<?= htmlspecialchars($room['name']) ?>">
                     <div class="card-content">
                         <div class="card-header">
                             <h2><?= htmlspecialchars($room['name']) ?></h2>
                             <span class="rating"><?= htmlspecialchars($room['rating']) ?></span>
                         </div>
                         <p class="card-details">
-                            Floor <?= htmlspecialchars($room['floor']) ?> | 
+                            Floor <?= htmlspecialchars($room['floor']) ?> |
                             Room ID: <?= htmlspecialchars($room['room_id']) ?>
                         </p>
                         <div class="availability">
@@ -40,8 +40,7 @@
                             <div class="card-price">
                                 $<?= number_format($room['price'], 2) ?><span class="card-day">/night</span>
                             </div>
-                            <a href="roombookings.php?room_id=<?= htmlspecialchars($room['id']) ?>" 
-                               class="book-now-btn">Book Now</a>
+                            <a href="/Hotel_Reservation_System/app/views/roombookings.php?room_id=<?= $room['id'] ?>" class="book-now-btn">Book Now</a>
                         </div>
                     </div>
                 </div>

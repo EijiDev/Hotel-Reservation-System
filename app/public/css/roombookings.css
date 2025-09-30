@@ -87,7 +87,7 @@ body {
   background: #fff3f3;
   padding: 30px;
   border-radius: 12px;
-  width: 480px;
+  width: 580px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   margin-top: -10px;
 }
@@ -204,5 +204,5 @@ button:hover {
 }
 
 .back-btn:hover {
-  background: rgba(153, 27, 27, 0.1);
+  background: rgba(234, 210, 210, 0.1);
 }

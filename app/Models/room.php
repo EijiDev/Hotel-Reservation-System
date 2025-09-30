@@ -12,6 +12,13 @@ class Room
     {
         $this->db = $db;
     }
+
+    public function getRoomById($id)
+    {
+        $stmt = $this->db->prepare("SELECT * FROM rooms WHERE id = :id LIMIT 1");
+        $stmt->execute([':id' => $id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
     public function getAllRooms()
     {
         $sql = "SELECT * FROM rooms";

@@ -10,33 +10,58 @@ use App\Controllers\BookingController;
 use App\Controllers\RoomController;
 use App\Models\User;
 
-// Connect database
+// Database connection
 $db = (new Database())->connect();
 
-// Initialize models and controllers
-$userModel = new User($db);
-$loginController = new LoginController($userModel);
-$signUpController = new SignUpController($userModel);
-
-// Handle routing
+// Routing params
 $controllerName = $_GET['controller'] ?? 'home';
 $action = $_GET['action'] ?? 'index';
 
-if ($action === 'login' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-    $loginController->login($_POST['email'], $_POST['password']);
-} elseif ($action === 'signup' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-    $signUpController->signup($_POST['name'], $_POST['email'], $_POST['password']);
-} elseif ($controllerName === 'booking') {
-    $controller = new BookingController($db);
-} elseif ($controllerName === 'room') {
-    $controller = new RoomController($db);
-} else {
-    $controller = new HomeController($db);
+// Controllers
+switch ($controllerName) {
+    case 'login':
+        $userModel = new User($db);
+        $controller = new LoginController($userModel);
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'login') {
+            $controller->login($_POST['email'], $_POST['password']);
+            exit;
+        }
+        break;
+
+    case 'signup':
+        $userModel = new User($db);
+        $controller = new SignUpController($userModel);
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'signup') {
+            $controller->signup($_POST['name'], $_POST['email'], $_POST['password']);
+            exit;
+        }
+        break;
+
+    case 'booking':
+        $controller = new BookingController($db);
+
+        if ($action === 'show') {
+            $roomId = $_GET['room_id'] ?? null;
+            $controller->show($roomId);
+            exit;
+        } elseif ($action === 'store') {
+            $controller->store();
+            exit;
+        }
+        break;
+
+    case 'room':
+        $controller = new RoomController($db);
+        break;
+
+    default:
+        $controller = new HomeController($db);
+        break;
 }
 
-// Call action if exists
+// Run action if exists
 if (method_exists($controller, $action)) {
     $controller->$action();
 } else {
-    echo "Error: Action '$action' not found in " . get_class($controller) . " controller.";
+    echo "Error: Action '$action' not found in " . get_class($controller);
 }
