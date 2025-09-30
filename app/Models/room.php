@@ -1,15 +1,23 @@
 <?php
+
 namespace App\Models;
+
 use PDO;
-class Room {
+
+class Room
+{
     private $db;
 
-    public function __construct($db) {
+    public function __construct($db)
+    {
         $this->db = $db;
     }
-
-    public function getAllRooms() {
-        $stmt = $this->db->query("SELECT * FROM rooms");
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    public function getAllRooms()
+    {
+        $sql = "SELECT * FROM rooms";
+        $stmt = $this->db->query($sql);
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        return $result;
     }
 }

@@ -31,7 +31,7 @@ if ($action === 'login' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 } elseif ($controllerName === 'room') {
     $controller = new RoomController($db);
 } else {
-    $controller = new HomeController();
+    $controller = new HomeController($db);
 }
 
 // Call action if exists

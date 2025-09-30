@@ -1,4 +1,4 @@
-<link rel="stylesheet" href="/app/public/css/nav.css">
+<link rel="stylesheet" href="css/nav.css">
 
 <nav class="navbar">
   <div class="navbar-left">

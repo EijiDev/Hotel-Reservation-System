@@ -1,12 +1,18 @@
 <?php
 namespace App\Controllers;
-class HomeController
-{
-    public function index()
-    {
-        $title = "Home Page";
-        include __DIR__ . '/../views/layouts/header.php';
-        include __DIR__ . '/../views/home.php';
-        include __DIR__ . '/../views/layouts/footer.php';
+
+use App\Models\Room;
+
+class HomeController {
+    private $roomModel;
+
+    public function __construct($db) {
+        $this->roomModel = new Room($db);
+    }
+
+    public function index() {
+        $rooms = $this->roomModel->getAllRooms();
+
+        include __DIR__ . '/../Views/home.php';
     }
 }

@@ -7,13 +7,16 @@
 </head>
 
 <body>
+    <!-- Navigation -->
+    <?php include "layouts/navigation.php"; ?>
+
     <!-- Hero Section -->
-    <section class="hero-section"">
-        <div class=" hero-container">
-        <h1 class="main-header">Welcome to Lunera Hotel and Grill</h1>
-        <p>Where comfort meets flavor, and every stay feels like home.</p>
-        <button id="view-btn">View Rooms</button>
-        <button id="signup-btn">Sign up</button>
+    <section class="hero-section">
+        <div class="hero-container">
+            <h1 class="main-header">Welcome to Lunera Hotel and Grill</h1>
+            <p>Where comfort meets flavor, and every stay feels like home.</p>
+            <button id="view-btn">View Rooms</button>
+            <button id="signup-btn">Sign up</button>
         </div>
     </section>
 
