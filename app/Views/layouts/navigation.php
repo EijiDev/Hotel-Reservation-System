@@ -19,14 +19,4 @@
     <a href="../views/login.php" class="btn-gradient">Log in</a>
   </div>
 </nav>
-
-<script>
-  window.addEventListener("scroll", function() {
-    const navbar = document.querySelector(".navbar");
-    if (window.scrollY > 50) {
-      navbar.classList.add("transparent");
-    } else {
-      navbar.classList.remove("transparent");
-    }
-  });
-</script>
+<script src="/Hotel_Reservation_System/app/public/js/nav.js"></script>
