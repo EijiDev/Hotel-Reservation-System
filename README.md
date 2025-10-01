@@ -94,7 +94,10 @@ Hotel_Reservation_System/
 ├── composer.json
 └── README.md
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> d7bdae8f4e66c629b50650cc5e831c2d4e3f87d3
 📡 API Endpoints / Functionality
 GET /rooms → List all rooms
 
@@ -125,6 +128,6 @@ This project is licensed under the MIT License.
 📬 Contact
 👤 EijiDev
 
-GitHub: @yourusername
+GitHub: EijiDev
 
 Email: jaysolis697@gmail.com
