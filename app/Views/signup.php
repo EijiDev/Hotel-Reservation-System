@@ -3,7 +3,7 @@
 <body>
   <div class="signup-container">
     <h1>Sign Up</h1>
-    <form class="form" id="signupForm" method="POST" action="/Hotel_Reservation_System/app/public/index.php?action=signup">
+    <form class="form" id="signupForm" method="POST" action="/Hotel_Reservation_System/app/public/index.php?controller=signup&action=signup">
       <label for="name">Name</label>
       <input type="text" id="name" name="name" placeholder="e.g. Fernando Junio" required />
 
@@ -16,7 +16,8 @@
       <button type="submit" class="signup-btn">Sign Up</button>
 
       <p class="signup-text">
-        Already have an account? <a href="../views/login.php">Log in</a>
+        Already have an account? 
+        <a href="/Hotel_Reservation_System/app/public/index.php?controller=login&action=index">Log in</a>
       </p>
     </form>
   </div>

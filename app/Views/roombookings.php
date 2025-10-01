@@ -1,12 +1,10 @@
 <?php
 require_once __DIR__ . '/../../vendor/autoload.php';
-
 use App\Config\Database;
 use App\Models\Room;
 
 $db = (new Database())->connect();
 $roomModel = new Room($db);
-
 $roomId = $_GET['room_id'] ?? null;
 
 if ($roomId) {
@@ -43,7 +41,7 @@ if ($roomId) {
         <h2>
           <?= htmlspecialchars($room['name']) ?>
           <span class="rating">
-            <i class="bx bxs-star"></i> <?= htmlspecialchars($room['rating']) ?>
+            <?= htmlspecialchars($room['rating']) ?>
           </span>
         </h2>
         <p class="description">
@@ -140,5 +138,5 @@ if ($roomId) {
     </div>
   </div>
 </body>
-<script src="../Hotel_Reservation_System/app/public/js/index.js"></script>
+<script src="/Hotel_Reservation_System/app/public/js/index.js"></script>
 </html>

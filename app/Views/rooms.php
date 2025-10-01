@@ -40,7 +40,11 @@
                             <div class="card-price">
                                 $<?= number_format($room['price'], 2) ?><span class="card-day">/night</span>
                             </div>
-                            <a href="/Hotel_Reservation_System/app/views/roombookings.php?room_id=<?= $room['id'] ?>" class="book-now-btn">Book Now</a>
+                            <?php if (isset($_SESSION['user_id'])): ?>
+                                <a href="/Hotel_Reservation_System/app/views/roombookings.php?room_id=<?= $room['id'] ?>" class="book-now-btn">Book Now</a>
+                            <?php else: ?>
+                                <a href="../views/login.php" class="book-now-btn">Book Now</a>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>

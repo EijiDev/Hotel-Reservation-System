@@ -1,6 +1,6 @@
 const today = new Date();
-const yyyy = today.getFullYear;
-const mm = String(today.getMonth() + 1).padStart(2, "0"); // Months start at 0
+const yyyy = today.getFullYear(); 
+const mm = String(today.getMonth() + 1).padStart(2, "0"); 
 const dd = String(today.getDate()).padStart(2, "0");
 
 const checkinDate = `${yyyy}-${mm}-${dd}`;
@@ -25,7 +25,7 @@ document.getElementById("checkin").addEventListener("change", (e) => {
   document.getElementById("checkout").min = newCheckout;
 });
 
-//alert message when successfull booking
+// Alert message when successful booking
 document.addEventListener("DOMContentLoaded", () => {
   const bookNowButton = document.getElementById("book-now-btn");
   if (bookNowButton) {

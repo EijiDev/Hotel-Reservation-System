@@ -42,21 +42,26 @@ body {
 .room-details h2 {
   font-size: 20px;
   margin-bottom: 8px;
-  color: #b91c1c;
+  color: #34495e;
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
 .rating {
-  background: #ffca28;
-  color: #333;
+  background-color: #f39c12;
+  color: white;
   padding: 4px 10px;
   border-radius: 20px;
   font-size: 14px;
   display: flex;
   align-items: center;
   gap: 4px;
+}
+
+.rating::before {
+  content: "⭐";
+  margin-right: 2px;
 }
 
 .category {
@@ -74,7 +79,7 @@ body {
 .price {
   font-weight: bold;
   font-size: 18px;
-  color: #991b1b;
+  color: #6d0101;
 }
 
 .per-night {

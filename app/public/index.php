@@ -8,7 +8,9 @@ use App\Controllers\LoginController;
 use App\Controllers\SignUpController;
 use App\Controllers\BookingController;
 use App\Controllers\RoomController;
+use App\Controllers\AdminController;
 use App\Models\User;
+
 
 // Database connection
 $db = (new Database())->connect();
@@ -25,6 +27,9 @@ switch ($controllerName) {
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'login') {
             $controller->login($_POST['email'], $_POST['password']);
             exit;
+        } else {
+            $controller->index();
+            exit;
         }
         break;
 
@@ -33,6 +38,9 @@ switch ($controllerName) {
         $controller = new SignUpController($userModel);
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'signup') {
             $controller->signup($_POST['name'], $_POST['email'], $_POST['password']);
+            exit;
+        } else {
+            $controller->index();
             exit;
         }
         break;
@@ -52,6 +60,10 @@ switch ($controllerName) {
 
     case 'room':
         $controller = new RoomController($db);
+        break;
+
+    case 'admin':   
+        $controller = new AdminController($db);
         break;
 
     default:
