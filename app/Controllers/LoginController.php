@@ -10,7 +10,6 @@ class LoginController
 
     public function __construct($userModel)
     {
-        session_start();
         $this->userModel = $userModel;
     }
 

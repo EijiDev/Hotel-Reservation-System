@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../../vendor/autoload.php';
+
 use App\Config\Database;
 use App\Models\Room;
 
@@ -17,19 +18,13 @@ if ($roomId) {
 }
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Hotel Booking</title>
-  <link rel="stylesheet" href="../public/css/roombookings.css">
-  <link
-    href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
-    rel="stylesheet" />
-</head>
+
+<title>Hotel Booking</title>
+<link rel="stylesheet" href="../public/css/roombookings.css">
+<link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
 
 <body>
-  <?php include "layouts/navigation.php";?>
+  <?php include "layouts/navigation.php"; ?>
 
   <div class="container">
     <!-- Room Card -->
@@ -139,4 +134,5 @@ if ($roomId) {
   </div>
 </body>
 <script src="/Hotel_Reservation_System/app/public/js/index.js"></script>
+
 </html>

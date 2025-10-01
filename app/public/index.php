@@ -1,5 +1,7 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 require_once __DIR__ . '/../../vendor/autoload.php';
 
 use App\Config\Database;
@@ -9,6 +11,7 @@ use App\Controllers\SignUpController;
 use App\Controllers\BookingController;
 use App\Controllers\RoomController;
 use App\Controllers\AdminController;
+use App\Controllers\LogoutController;
 use App\Models\User;
 
 
@@ -31,7 +34,6 @@ switch ($controllerName) {
             $controller->index();
             exit;
         }
-        break;
 
     case 'signup':
         $userModel = new User($db);
@@ -43,7 +45,6 @@ switch ($controllerName) {
             $controller->index();
             exit;
         }
-        break;
 
     case 'booking':
         $controller = new BookingController($db);
@@ -62,9 +63,18 @@ switch ($controllerName) {
         $controller = new RoomController($db);
         break;
 
-    case 'admin':   
-        $controller = new AdminController($db);
+    case 'admin':
+        if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+            header("Location: /Hotel_Reservation_System/app/public/index.php?controller=login&action=index");
+            exit;
+        }
+        $controller = new AdminController();
         break;
+
+    case 'logout':
+        $controller = new LogoutController();
+        $controller->index();
+        exit;
 
     default:
         $controller = new HomeController($db);

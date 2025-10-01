@@ -1,5 +1,6 @@
 <link rel="stylesheet" href="../public/css/login.style.css">
 <title>Login</title>
+
 <body>
     <div class="login-container">
         <div class="context">
@@ -15,10 +16,11 @@
                 <button type="submit" class="login-btn">Log in</button>
             </form>
 
-            <p class="signup-text">Don't have an account? 
-              <a href="/Hotel_Reservation_System/app/public/index.php?controller=signup&action=index">Sign up</a>
+            <p class="signup-text">Don't have an account?
+                <a href="/Hotel_Reservation_System/app/public/index.php?controller=signup&action=index">Sign up</a>
             </p>
         </div>
     </div>
 </body>
+
 </html>

@@ -12,7 +12,7 @@
             </ul>
         </div>
         <div class="bottom">
-            <button class="logout"><i class="fa-solid fa-right-from-bracket"></i>Log out</button>
+            <a href="/Hotel_Reservation_System/app/public/index.php?controller=logout&action=index" class="logout"><i class="fa-solid fa-right-from-bracket"></i>Log out</a>
         </div>
     </div>
 

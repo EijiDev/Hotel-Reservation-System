@@ -6,9 +6,13 @@ class AdminController
 {
     private $db;
 
-    public function __construct($db)
+    public function __construct()
     {
-        $this->db = $db;
+        if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
+            echo "<p>You do not have authorization to access this page.</p>";
+            header("Location: /Hotel_Reservation_System/app/views/login.php?error=unauthorized");
+            exit;
+        }
     }
 
     public function index()

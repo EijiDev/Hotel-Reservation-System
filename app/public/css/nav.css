@@ -89,3 +89,27 @@ body {
   background-color: #6d0101;
   border: none;
 }
+
+.btn-logout {
+  padding: 0.7rem 0.75rem;
+  color: black; 
+  background: transparent;
+  border-radius: 0.5rem;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.btn-logout:hover {
+  background-color: #b91c1c;
+  color: white;
+}
+
+.logo {
+  height: 50px; 
+  width: 5.5rem;
+  margin-left: 10px;
+}
