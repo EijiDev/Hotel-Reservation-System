@@ -52,3 +52,4 @@
         <?php endif; ?>
     </div>
 </section>
+<script src="/Hotel_Reservation_System/app/public/js/modal.js"></script>

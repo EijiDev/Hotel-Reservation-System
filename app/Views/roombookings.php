@@ -140,5 +140,5 @@ if ($roomId) {
     </div>
   </div>
 </body>
-
+<script src="../Hotel_Reservation_System/app/public/js/index.js"></script>
 </html>
