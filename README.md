@@ -53,7 +53,7 @@ Make sure you have installed:
 - [PHP 8+](https://www.php.net/)  
 - [Composer](https://getcomposer.org/)  
 - [MySQL / MariaDB](https://www.mysql.com/)  
-- [XAMPP / Laragon / WAMP]  
+- [XAMPP]  
 
 ### 📥 Installation
 ```bash
