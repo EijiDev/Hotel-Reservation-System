@@ -5,7 +5,7 @@
 <nav class="navbar">
   <div class="navbar-left">
     <a href="/Hotel_Reservation_System/app/public/index.php?controller=home&action=index">
-      <img src="../public/assets/hotel-logo.png" alt="Lunera Hotel Logo" class="logo">
+      <img src="../public/assets/Lunera-Logo.png" alt="Lunera Hotel Logo" class="logo">
     </a>
   </div>
 
