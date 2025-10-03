@@ -126,8 +126,5 @@ Push and create a Pull Request
 This project is licensed under the MIT License.
 
 📬 Contact
-👤 EijiDev
-
 GitHub: EijiDev
-
 Email: jaysolis697@gmail.com
