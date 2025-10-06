@@ -28,7 +28,7 @@ class User
         ]);
     }
 
-    // Find user by email
+    // Find user by email if the user is duplicated
     public function findByEmail($email)
     {
         $sql = "SELECT * FROM UserAccounts WHERE Email = :email LIMIT 1";
