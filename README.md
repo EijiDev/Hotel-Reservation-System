@@ -10,7 +10,7 @@ This project allows users to **browse rooms, make bookings, and admins to manage
 
 ---
 
-## 📑 Table of Contents
+📑 Table of Contents
 - [✨ Features](#-features)  
 - [🛠 Tech Stack](#-tech-stack)  
 - [🚀 Getting Started](#-getting-started)  
@@ -126,8 +126,5 @@ Push and create a Pull Request
 This project is licensed under the MIT License.
 
 📬 Contact
-👤 EijiDev
-
 GitHub: EijiDev
-
 Email: jaysolis697@gmail.com
