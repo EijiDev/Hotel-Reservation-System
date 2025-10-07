@@ -9,10 +9,14 @@
             <h2><i class="fa-solid fa-hotel"></i> Admin Panel</h2>
             <ul>
                 <li class="dashboard-bar"><i class="fa-solid fa-chart-line"></i> Dashboard</li>
+                <li class="dashboard-bar"><i class="fa-solid fa-receipt"></i> Billing History</li>
+                <li class="dashboard-bar"><i class="fa-solid fa-box"></i> Order History</li>
             </ul>
         </div>
         <div class="bottom">
-            <a href="/Hotel_Reservation_System/app/public/index.php?controller=logout&action=index" class="logout"><i class="fa-solid fa-right-from-bracket"></i>Log out</a>
+            <a href="/Hotel_Reservation_System/app/public/index.php?controller=logout&action=index" class="logout">
+                <i class="fa-solid fa-right-from-bracket"></i> Log out
+            </a>
         </div>
     </div>
 
@@ -50,7 +54,7 @@
             <div class="filters">
                 <input type="text" id="search" placeholder="Search bookings...">
                 <select id="statusFilter">
-                    <option value="all">All Statuses</option>
+                    <option value="all">Status</option>
                     <option value="confirmed">Confirmed</option>
                     <option value="pending">Pending</option>
                 </select>
@@ -97,3 +101,4 @@
             </table>
         </div>
     </div>
+</body>
