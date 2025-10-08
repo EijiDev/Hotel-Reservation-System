@@ -9,8 +9,7 @@
             <h2><i class="fa-solid fa-hotel"></i> Admin Panel</h2>
             <ul>
                 <li class="dashboard-bar"><i class="fa-solid fa-chart-line"></i> Dashboard</li>
-                <li class="dashboard-bar"><i class="fa-solid fa-receipt"></i> Billing History</li>
-                <li class="dashboard-bar"><i class="fa-solid fa-box"></i> Order History</li>
+                <li class="dashboard-bar"><i class="fa-solid fa-receipt"></i> History</li>
             </ul>
         </div>
         <div class="bottom">
