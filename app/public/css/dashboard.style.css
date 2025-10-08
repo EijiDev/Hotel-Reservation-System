@@ -14,7 +14,7 @@ body {
 /* Sidebar */
 .sidebar {
   width: 200px;
-  background: #fdecec;
+  background: #29294e;
   height: 100vh;
   padding: 20px;
   display: flex;
@@ -24,7 +24,7 @@ body {
 }
 
 i {
-  color: #922b21;
+  color: white;
 }
 
 .sidebar h2 {
@@ -33,6 +33,7 @@ i {
   gap: 10px;
   font-size: 15px;
   margin-bottom: 20px;
+  color: white;
 }
 
 .dashboard-bar {
@@ -47,6 +48,7 @@ i {
 
 .sidebar ul {
   list-style: none;
+  color: white;
 }
 
 .sidebar ul li {

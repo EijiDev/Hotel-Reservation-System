@@ -14,7 +14,7 @@
         </div>
         <div class="bottom">
             <a href="/Hotel_Reservation_System/app/public/index.php?controller=logout&action=index" class="logout">
-                <i class="fa-solid fa-right-from-bracket"></i> Log out
+                <i class="fa-solid fa-right-from-bracket" class="log-out"></i> Log out
             </a>
         </div>
     </div>
