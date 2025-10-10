@@ -1,4 +1,4 @@
-# 🏨 Hotel Reservation System  
+🏨 Hotel Reservation System  
 
 [![PHP](https://img.shields.io/badge/PHP-8.0%2B-blue?logo=php)](https://www.php.net/)  
 [![MySQL](https://img.shields.io/badge/MySQL-Database-orange?logo=mysql)](https://www.mysql.com/)  
@@ -43,7 +43,7 @@ This project allows users to **browse rooms, make bookings, and admins to manage
 | **Frontend**     | HTML / CSS / JavaScript |
 | **Database**     | MySQL / MariaDB       |
 | **Auth**         | PHP Sessions          |
-
+I added composer
 ---
 
 ## 🚀 Getting Started  
