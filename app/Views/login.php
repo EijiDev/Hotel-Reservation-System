@@ -2,25 +2,46 @@
 <title>Login</title>
 
 <body>
-    <div class="login-container">
-        <div class="context">
-            <h1>Log in</h1>
-            <p>Enter your credentials to access your account</p>
-            <form class="form" method="POST" action="/Hotel_Reservation_System/app/public/index.php?controller=login&action=login">
-                <label for="email">Email</label>
-                <input type="email" id="email" name="email" placeholder="example123@example.com" required />
+    <div class="login-wrapper">
+        <!-- LEFT PANEL -->
+        <div class="left-panel">
+            <div class="login-left">
+                <img src="../public/assets/leftpanel-image.png" alt="Hotel view" class="login-image">
+            </div>
+        </div>
 
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" placeholder="example123" required />
+        <!-- RIGHT PANEL -->
+        <div class="login-right">
+            <div class="login-card">
+                <h1>Welcome Back 👋</h1>
+                <p class="subtitle">Enter your credentials to continue</p>
 
-                <button type="submit" class="login-btn">Log in</button>
-            </form>
+                <!-- Error Message -->
+                <?php if (isset($error) && !empty($error)) : ?>
+                    <div class="error-message">
+                        <?= htmlspecialchars($error) ?>
+                    </div>
+                <?php endif; ?>
 
-            <p class="signup-text">Don't have an account?
-                <a href="/Hotel_Reservation_System/app/public/index.php?controller=signup&action=index">Sign up</a>
-            </p>
+                <form method="POST" action="/Hotel_Reservation_System/app/public/index.php?controller=login&action=login" class="login-form">
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" placeholder="example123@example.com" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" placeholder="example123" required>
+                    </div>
+
+                    <button type="submit" class="login-btn">Log in</button>
+                </form>
+
+                <p class="signup-text">
+                    Don’t have an account?
+                    <a href="/Hotel_Reservation_System/app/public/index.php?controller=signup&action=index">Sign up</a>
+                </p>
+            </div>
         </div>
     </div>
 </body>
-
-</html>

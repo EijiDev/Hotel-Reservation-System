@@ -1,4 +1,3 @@
-<title>Admin Dashboard</title>
 <link rel="stylesheet" href="./css/dashboard.style.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -14,7 +13,7 @@
         </div>
         <div class="bottom">
             <a href="/Hotel_Reservation_System/app/public/index.php?controller=logout&action=index" class="logout">
-                <i class="fa-solid fa-right-from-bracket" class="log-out"></i> Log out
+                <i class="fa-solid fa-right-from-bracket"></i> Log out
             </a>
         </div>
     </div>
@@ -68,9 +67,9 @@
                         <th>Room Type</th>
                         <th>Check-in</th>
                         <th>Check-out</th>
-                        <th>Status</th>
                         <th>Payment Status</th>
                         <th>Total Amount</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody id="bookingTable">
@@ -81,9 +80,12 @@
                         <td>Deluxe</td>
                         <td>Oct 06, 2025</td>
                         <td>Oct 10, 2025</td>
-                        <td><span class="status confirmed">Confirmed</span></td>
                         <td><span class="payment paid">Paid</span></td>
                         <td>$1400.00</td>
+                        <td class="actions">
+                            <button class="view-btn">Confirm</button>
+                            <button class="delete-btn">Remove</button>
+                        </td>
                     </tr>
                     <tr>
                         <td>2</td>
@@ -92,12 +94,14 @@
                         <td>VIP</td>
                         <td>Oct 11, 2025</td>
                         <td>Oct 16, 2025</td>
-                        <td><span class="status confirmed">Confirmed</span></td>
                         <td><span class="payment pending">Pending</span></td>
                         <td>$2100.00</td>
+                        <td class="actions">
+                            <button class="view-btn">Confirm</button>
+                            <button class="delete-btn">Remove</button>
+                        </td>
                     </tr>
                 </tbody>
             </table>
         </div>
     </div>
-</body>

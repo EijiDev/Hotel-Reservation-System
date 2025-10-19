@@ -15,6 +15,9 @@ class LoginController
 
     public function index()
     {
+        // Check if there's an error message from login
+        $error = $_SESSION['error'] ?? null;
+        unset($_SESSION['error']); // clear it after showing once
         include __DIR__ . '/../Views/login.php';
     }
 
@@ -25,6 +28,7 @@ class LoginController
         if ($user) {
             $_SESSION['user_id'] = $user['UserID'];
             $_SESSION['role'] = $user['role'];
+
             if (strtolower($user['role']) === 'admin') {
                 header("Location: /Hotel_Reservation_System/app/public/index.php?controller=admin&action=index");
                 exit;
@@ -32,6 +36,11 @@ class LoginController
                 header("Location: /Hotel_Reservation_System/app/public/index.php?controller=home&action=index");
                 exit;
             }
+        } else {
+            // Invalid credentials — store error message in session
+            $_SESSION['error'] = "Invalid email or password. Please try again.";
+            header("Location: /Hotel_Reservation_System/app/public/index.php?controller=login&action=index");
+            exit;
         }
     }
 }

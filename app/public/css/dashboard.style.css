@@ -242,3 +242,36 @@ table th {
 .billing-history .view-btn:hover {
   background: #922b21;
 }
+
+.actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.view-btn, .delete-btn {
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: bold;
+  color: #fff;
+  transition: background 0.3s ease;
+}
+
+.view-btn {
+  background: #27ae60; 
+}
+
+.view-btn:hover {
+  background: #1e874b;
+}
+
+.delete-btn {
+  background: #e74c3c;
+}
+
+.delete-btn:hover {
+  background: #c0392b;
+}
