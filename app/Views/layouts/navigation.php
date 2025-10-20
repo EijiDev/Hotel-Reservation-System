@@ -11,8 +11,8 @@
 
   <ul class="navbar-menu">
     <li><a href="/Hotel_Reservation_System/app/public/index.php?controller=home&action=index" class="nav-link">Home</a></li>
-    <li><a href="/Hotel_Reservation_System/app/public/index.php?controller=room&action=index" class="nav-link">Rooms</a></li>
-    <li><a href="/Hotel_Reservation_System/app/public/index.php?controller=home&action=contact" class="nav-link">Contact</a></li>
+    <li><a href="/Hotel_Reservation_System/app/views/availablerooms.php" class="nav-link">Rooms</a></li>
+    <li><a href="#" class="nav-link">Contact</a></li>
 
     <?php if (isset($_SESSION['user_id'])): ?>
       <?php if ($_SESSION['role'] === 'admin'): ?>
