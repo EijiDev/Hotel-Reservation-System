@@ -32,7 +32,6 @@ This project allows users to **browse rooms, make bookings, and admins to manage
 ✅ Admin dashboard: manage rooms, reservations, and users  
 ✅ Booking history for users  
 ✅ Validation (dates, availability, permissions)  
-✅ Responsive design for desktop + mobile  
 
 ---
 
