@@ -1,7 +1,10 @@
 <?php if (session_status() === PHP_SESSION_NONE) session_start(); ?>
 <meta charset="UTF-8">
 <title>Lunera Hotel and Grill</title>
+<head>
+<link rel="icon" href="../public/assets/Lunera-Logo.png" type="image/ico">
 <link rel="stylesheet" href="css/style.css">
+</head>
 <body>
     <?php include "layouts/navigation.php"; ?>
     <section class="hero-section">

@@ -1,4 +1,5 @@
 <link rel="stylesheet" href="../public/css/signup.css">
+<link rel="icon" href="../public/assets/Lunera-Logo.png" type="image/ico">
 <title>Signup</title>
 
 <body>
