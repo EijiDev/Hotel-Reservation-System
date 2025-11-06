@@ -23,6 +23,7 @@ if ($roomId) {
 <link rel="stylesheet" href="../public/css/roombookings.css">
 <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
 <link rel="icon" href="../public/assets/Lunera-Logo.png" type="image/ico">
+
 <body>
   <?php include "layouts/navigation.php"; ?>
 
@@ -43,7 +44,7 @@ if ($roomId) {
           <?= htmlspecialchars($room['description']) ?>
         </p>
         <p class="price">
-          <span class="amount">$<?= number_format($room['price'], 2) ?></span>
+          <span class="amount">₱<?= number_format($room['price'], 2) ?></span>
           <span class="per-night">/night</span>
         </p>
       </div>
@@ -61,8 +62,7 @@ if ($roomId) {
       <p class="subtext">Confirm the details for your stay.</p>
       <h3>Reservation Details</h3>
       <form method="POST" action="/Hotel_Reservation_System/app/public/index.php?controller=booking&action=store">
-        <input type="hidden" name="room_id" value="<?= htmlspecialchars($room['id']) ?>">
-
+        <input type="hidden" name="room_id" value="<?= htmlspecialchars($room['RoomID']) ?>">
         <div class="form-row">
           <div>
             <label>Check-in</label>

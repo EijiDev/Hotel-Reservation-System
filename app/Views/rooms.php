@@ -23,9 +23,9 @@
                         </p>
                         <div class="availability">
                             <?php if ($room['availability'] === 'Available'): ?>
-                                <i class="fa-solid fa-check available-icon"></i>Available
+                                <i class="fa-solid fa-check available-icon" style="color: green;"></i><p style="color: green;">Available</p>
                             <?php else: ?>
-                                <i class="fa-solid fa-times unavailable-icon"></i>Not Available
+                                <i class="fa-solid fa-times unavailable-icon" style="color: red;"></i><p style="color: red;">Not Available</p>
                             <?php endif; ?>
                         </div>
                         <p class="card-description"><?= htmlspecialchars($room['description']) ?></p>
@@ -38,10 +38,10 @@
 
                         <div class="card-footer">
                             <div class="card-price">
-                                $<?= number_format($room['price'], 2) ?><span class="card-day">/night</span>
+                                ₱<?= number_format($room['price'], 2) ?><span class="card-day">/night</span>
                             </div>
                             <?php if (isset($_SESSION['user_id'])): ?>
-                                <a href="/Hotel_Reservation_System/app/views/roombookings.php?room_id=<?= $room['id'] ?>" class="book-now-btn">Book Now</a>
+                                <a href="/Hotel_Reservation_System/app/views/roombookings.php?room_id=<?= $room['RoomID'] ?>" class="book-now-btn">Book Now</a>
                             <?php else: ?>
                                 <a href="../views/login.php" class="book-now-btn">Book Now</a>
                             <?php endif; ?>

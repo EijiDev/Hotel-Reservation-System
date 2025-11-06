@@ -109,7 +109,6 @@
   display: flex;
   align-items: center;
   font-size: 0.9em;
-  color: #27ae60;
   margin-top: 10px;
 }
 
@@ -198,3 +197,4 @@
 .availability i {
   margin-right: 8px;
 }
+
