@@ -15,10 +15,7 @@
     <li><a href="#" class="nav-link">Contact</a></li>
 
     <?php if (isset($_SESSION['user_id'])): ?>
-      <?php if ($_SESSION['role'] === 'admin'): ?>
-        <li><a href="/Hotel_Reservation_System/app/public/index.php?controller=admin&action=index" class="nav-link">Dashboard</a></li>
-      <?php endif; ?>
-      <li><a href="/Hotel_Reservation_System/app/public/index.php?controller=profile&action=index" class="nav-link">My Bookings</a></li>
+      <li><a href="/Hotel_Reservation_System/app/public/index.php?controller=user&action=userbookings" class="nav-link">My Bookings</a></li>
     <?php endif; ?>
   </ul>
 

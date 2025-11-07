@@ -45,17 +45,23 @@ switch ($controllerName) {
             $controller->index();
             exit;
         }
-
     case 'booking':
         $controller = new BookingController($db);
 
         if ($action === 'show') {
             $roomId = $_GET['room_id'] ?? null;
             $controller->show($roomId);
-            exit;
         } elseif ($action === 'store') {
             $controller->store();
-            exit;
+        } elseif ($action === 'cancel') {
+            $bookingId = $_GET['id'] ?? null;
+            if ($bookingId) {
+                $controller->cancel($bookingId);
+            } else {
+                echo "No booking ID provided.";
+            }
+        } elseif ($action === 'userBookings') {
+            $controller->userBookings();
         }
         break;
 

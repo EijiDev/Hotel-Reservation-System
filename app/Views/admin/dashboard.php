@@ -3,7 +3,6 @@
 <link rel="icon" href="../public/assets/Lunera-Logo.png" type="image/ico">
 
 <body>
-    <!-- Sidebar -->
     <div class="sidebar">
         <div>
             <h2><i class="fa-solid fa-hotel"></i> Admin Panel</h2>
@@ -19,63 +18,81 @@
         </div>
     </div>
 
-<!-- Main Content -->
-<div class="main">
-<h1>Admin Dashboard</h1>
+    <!-- Main Content -->
+    <div class="main">
+        <h1>Admin Dashboard</h1>
 
-<div class="stats">
-    <div class="card">
-        <h3>Total Revenue</h3>
-        <p>₱<?= number_format($stats['total_revenue'], 2) ?></p>
-        <small>Based on all bookings</small>
+        <div class="stats">
+            <div class="card">
+                <h3>Total Revenue</h3>
+                <p>₱<?= number_format($stats['total_revenue'], 2) ?></p>
+                <small>Based on all bookings</small>
+            </div>
+
+            <div class="card">
+                <h3>Total Bookings</h3>
+                <p><?= $stats['total_bookings'] ?></p>
+                <small>All recorded bookings</small>
+            </div>
+
+            <div class="card">
+                <h3>Upcoming Check-ins</h3>
+                <p><?= $stats['upcoming_checkins'] ?></p>
+                <small>Within 7 days</small>
+            </div>
+
+            <div class="card">
+                <h3>Available Rooms</h3>
+                <p><?= $stats['available_rooms'] ?></p>
+                <small>Rooms ready for booking</small>
+            </div>
+        </div>
+
+        <div class="manage-bookings">
+            <h2>Manage Bookings</h2>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Guest</th>
+                        <th>Room Type</th>
+                        <th>Check-in</th>
+                        <th>Check-out</th>
+                        <th>Status</th>
+                        <th>Payment Status</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($bookings as $b): ?>
+                        <?php
+                        $status = $b['booking_status'] ?? 'available';
+                        $payment = $b['Payment_Method'] ?? 'Pending';
+                        ?>
+                        <tr>
+                            <td><?= $b['BookingID'] ?></td>
+                            <td><?= htmlspecialchars($b['GuestName'] ?? 'Unknown') ?></td>
+                            <td><?= htmlspecialchars($b['RoomType'] ?? 'Unknown') ?></td>
+                            <td><?= $b['CheckIn'] ?? 'N/A' ?></td>
+                            <td><?= $b['CheckOut'] ?? 'N/A' ?></td>
+
+                            <td>
+                                <span class="status <?= strtolower($status) ?>">
+                                    <?= ucfirst($status) ?>
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="payment <?= strtolower($payment) ?>">
+                                    <?= ucfirst($payment) ?>
+                                </span>
+                            </td>
+
+                            <td>₱<?= number_format($b['TotalAmount'] ?? 0, 2) ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
     </div>
-
-    <div class="card">
-        <h3>Total Bookings</h3>
-        <p><?= $stats['total_bookings'] ?></p>
-        <small>All recorded bookings</small>
-    </div>
-
-    <div class="card">
-        <h3>Upcoming Check-ins</h3>
-        <p><?= $stats['upcoming_checkins'] ?></p>
-        <small>Within 7 days</small>
-    </div>
-
-    <div class="card">
-        <h3>Available Rooms</h3>
-        <p><?= $stats['available_rooms'] ?></p>
-        <small>Rooms ready for booking</small>
-    </div>
-</div>
-
-<div class="manage-bookings">
-    <h2>Manage Bookings</h2>
-
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th><th>Guest</th><th>Room Type</th><th>Check-in</th>
-                <th>Check-out</th><th>Payment</th><th>Total</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php foreach ($bookings as $b): ?>
-                <tr>
-                    <td><?= $b['BookingID'] ?></td>
-                    <td><?= htmlspecialchars($b['GuestName']) ?></td>
-                    <td><?= htmlspecialchars($b['RoomType']) ?></td>
-                    <td><?= $b['CheckIn'] ?></td>
-                    <td><?= $b['CheckOut'] ?></td>
-                    <td>
-                        <span class="payment <?= strtolower($b['PaymentStatus']) ?>">
-                            <?= ucfirst($b['PaymentStatus']) ?>
-                        </span>
-                    </td>
-                    <td>₱<?= number_format($b['TotalAmount'], 2) ?></td>
-                </tr>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
-</div>
-</div>

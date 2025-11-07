@@ -12,22 +12,20 @@ class BookingController
 
     public function __construct($db)
     {
-        session_start(); // ensure session is active
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
         $this->bookingModel = new Booking($db);
         $this->roomModel = new Room($db);
     }
 
     public function show($roomId)
     {
-        if (!$roomId) {
-            die("No room ID provided.");
-        }
+        if (!$roomId) die("No room ID provided.");
 
         $room = $this->roomModel->getRoomById($roomId);
-
-        if (!$room) {
-            die("Room not found.");
-        }
+        if (!$room) die("Room not found.");
 
         include __DIR__ . '/../Views/roombookings.php';
     }
@@ -64,9 +62,56 @@ class BookingController
             );
 
             $this->roomModel->updateAvailability($room_id, 'Booked');
-
             header("Location: /Hotel_Reservation_System/app/public/index.php?controller=home&action=index&success=1");
             exit();
         }
+    }
+
+    public function userBookings()
+    {
+        if (!isset($_SESSION['user_id'])) {
+            header("Location: /Hotel_Reservation_System/app/public/index.php?controller=login&action=index");
+            exit();
+        }
+
+        $userId = $_SESSION['user_id'];
+        $bookings = $this->bookingModel->getBookingsByUser($userId);
+
+        include __DIR__ . '/../Views/userbookings.php';
+    }
+
+    public function edit($bookingId)
+    {
+        if (!isset($_SESSION['user_id'])) {
+            header("Location: /Hotel_Reservation_System/app/views/login.php?error=login_required");
+            exit;
+        }
+
+        $booking = $this->bookingModel->getBookingById($bookingId);
+        if (!$booking) die("Booking not found.");
+
+        include __DIR__ . '/../Views/roomsbooking.php';
+    }
+
+    public function cancel($bookingId)
+    {
+        if (!isset($_SESSION['user_id'])) {
+            header("Location: /Hotel_Reservation_System/app/public/index.php?controller=login&action=index");
+            exit();
+        }
+
+        $booking = $this->bookingModel->getBookingById($bookingId);
+
+        if (!$booking) die("Booking not found.");
+
+        if ($booking['UserID'] != $_SESSION['user_id']) {
+            die("Booking not authorized.");
+        }
+
+        $this->bookingModel->deleteBooking($bookingId);
+        $this->roomModel->updateAvailability($booking['room_id'], 'Available');
+
+        header("Location: /Hotel_Reservation_System/app/public/index.php?controller=home&action=index&success=1");
+        exit();
     }
 }

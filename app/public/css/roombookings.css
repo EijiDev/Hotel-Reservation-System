@@ -15,12 +15,11 @@ body {
 
 .room-card {
   background: white;
-  border-radius: 12px;
+  border-radius: 6px;
   overflow: hidden;
-  width: 500px;
+  width: 540px;
   box-shadow: 3px 6px 24px -5px rgba(0, 0, 0, 0.62);
   -webkit-box-shadow: 3px 6px 24px -5px rgba(0, 0, 0, 0.62);
-  -moz-box-shadow: 3px 6px 24px -5px rgba(0, 0, 0, 0.62);
   transition: transform 0.2s ease;
   margin-top: 50px;
 }
