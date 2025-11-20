@@ -1,54 +1,81 @@
+/* General Body */
 body {
-  font-family: 'Poppins', sans-serif;
-  background-color: #fff5f5;
+  font-family: "Poppins", sans-serif;
+  background-color: #f9f9f9;
   margin: 0;
   padding: 0;
+  color: #555; /* grey text */
 }
 
+/* Container for bookings */
 .container {
-  display: flex;             
-  flex-wrap: wrap;           
-  justify-content: flex-start;   
-  margin-left: 20px;
-  gap: 30px;                  
-  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between; /* evenly space cards */
+  gap: 30px;
+  margin: 20px auto;
   padding: 0 20px;
+  max-width: 1300px;
 }
 
+@media screen and (max-width: 1024px) {
+  .container {
+    justify-content: center;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .container {
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+/* Page Title */
 .title {
   width: 100%;
   font-size: 2.5rem;
   font-weight: 700;
-  color: #7b0000;
+  color: #6d0101;
   text-align: center;
+  margin-bottom: 10px;
 }
 
 .subtitle {
   width: 100%;
-  color: #555;
   text-align: center;
+  color: #6c757d;
+  margin-bottom: 30px;
 }
 
+/* Booking Card */
 .booking-card {
-  width: 420px;               
-  background: #fff;
+  flex: 1 1 calc(33% - 20px); /* 3 per row */
+  max-width: 400px;           /* reduce width to fit 3 cards */
+  background-color: #fff;
   border-radius: 8px;
-  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
   overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
   display: flex;
   flex-direction: column;
-  font-weight: bold;
+  transition: transform 0.2s ease-in-out;
+}
+
+.booking-card:hover {
+  transform: translateY(-5px);
 }
 
 .room-image {
   width: 100%;
   height: 230px;
   object-fit: cover;
+  border-bottom: 1px solid #ddd;
 }
 
 .card-content {
-  text-align: left;
   padding: 20px;
+  display: flex;
+  flex-direction: column;
 }
 
 .room-header {
@@ -58,25 +85,38 @@ body {
 }
 
 .room-header h2 {
-  color: #7b0000;
-  font-size: 1.3rem;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #363535;
   margin: 0;
-  font-weight: bold;
 }
 
 .status {
-  background-color: #7b0000;
-  color: white;
-  padding: 5px 10px;
-  border-radius: 10px;
-  font-size: 0.8rem;
-  font-weight: bold;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: inline-block;
+  color: #fff;
 }
 
+.status.pending { background-color: #f1c40f; }
+.status.confirmed { background-color: #2ecc71; }
+.status.canceled { background-color: #e74c3c; }
+
 .room-details p {
-  color: #555;
-  margin: 5px 0;
   font-size: 0.95rem;
+  color: #555;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 5px 0;
+}
+
+.room-details i {
+  color: #444;
 }
 
 .check-info {
@@ -87,24 +127,23 @@ body {
 
 .label {
   font-weight: 600;
-  color: #333;
+  color: #777;
+  margin-bottom: 3px;
 }
 
 .date {
-  color: #555;
+  color: #444;
   font-size: 0.95rem;
 }
 
-.price {
-  margin-top: 15px;
-}
-
 .price p {
-  margin: 0;
-  font-size: 1rem;
-  color: #444;
+  margin-top: 15px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #6d0101;
 }
 
+/* Buttons */
 .buttons {
   display: flex;
   justify-content: space-between;
@@ -117,7 +156,7 @@ body {
   flex: 1;
   padding: 10px 0;
   margin: 0 5px;
-  border-radius: 10px;
+  border-radius: 8px;
   cursor: pointer;
   font-weight: 500;
   border: none;
@@ -125,25 +164,42 @@ body {
 }
 
 .modify-btn {
-  background-color: #f3f3f3;
-  font-weight: bold;
-  color: black;
+  background-color: #f8f9fa;
+  color: #6d0101;
   text-decoration: none;
   text-align: center;
+  font-weight: 600;
 }
 
 .modify-btn:hover {
-  background-color: #ddd;
+  background-color: #6d0101;
+  color: #fff;
 }
 
 .cancel-btn {
-  background-color: #7b0000;
+  background-color: #e74c3c;
   color: #fff;
   font-weight: bold;
 }
 
 .cancel-btn:hover {
-  background-color: #900000;
+  background-color: #c0392b;
 }
 
+.check-info i {
+  margin-right: 6px;
+}
 
+/* Responsive adjustments */
+@media screen and (max-width: 1024px) {
+  .booking-card {
+    flex: 1 1 calc(45% - 20px); /* 2 per row */
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .booking-card {
+    flex: 1 1 100%; /* 1 per row */
+    max-width: 100%;
+  }
+}

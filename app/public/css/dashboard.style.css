@@ -3,7 +3,7 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
 body {
@@ -17,14 +17,14 @@ body {
 /* Sidebar */
 .sidebar {
   width: 220px;
-  background: #fff;
+  background: #2c3e50; /* dark modern color */
   height: 100vh;
-  padding: 25px 20px;
+  padding: 25px 20px; /* keep your spacing */
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  border-right: 1px solid #e0e0e0;
-  box-shadow: 2px 0 6px rgba(0, 0, 0, 0.05);
+  color: #ecf0f1; /* text color */
+  box-shadow: 2px 0 6px rgba(0, 0, 0, 0.1);
   font-weight: 600;
   transition: all 0.3s ease;
 }
@@ -33,26 +33,31 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 16px;
-  margin-bottom: 30px;
-  color: #333;
+  font-size: 16px; /* keep your font size */
+  margin-bottom: 30px; /* keep your spacing */
+  color: #ecf0f1;
 }
 
 .sidebar ul {
   list-style: none;
+  padding-left: 0;
 }
 
 .sidebar ul li {
-  margin: 15px 0;
+  margin: 15px 0; /* keep your spacing */
   font-size: 15px;
   cursor: pointer;
-  padding: 10px 12px;
+  padding: 10px 12px; /* keep your spacing */
   border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px; 
   transition: all 0.2s ease;
 }
 
 .sidebar ul li:hover {
-  background-color: #f0f0f0;
+  background-color: #34495e; 
+  color: #fff;
 }
 
 .sidebar .bottom {
@@ -60,27 +65,29 @@ body {
 }
 
 .logout {
-  background: #fff;
-  border: 1px solid #ccc;
-  padding: 10px;
+  background: #e74c3c;
+  border: none;
+  padding: 10px; 
   border-radius: 8px;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 10px;
   text-decoration: none;
-  color: #333;
+  color: #fff;
   justify-content: center;
+  font-weight: bold;
   transition: all 0.2s ease;
 }
 
 .logout:hover {
-  background: #f0f0f0;
+  background: #c0392b;
 }
 
-/* Sidebar icons */
 .sidebar i {
-  color: #333;
+  min-width: 20px;
+  text-align: center;
+  font-size: 16px;
 }
 
 /* Main Content */
@@ -142,20 +149,6 @@ body {
   color: #333;
 }
 
-.filters {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 15px;
-}
-
-.filters input,
-.filters select {
-  padding: 8px 12px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 13px;
-}
-
 /* Tables */
 table {
   width: 100%;
@@ -180,7 +173,11 @@ table th {
   font-weight: 600;
 }
 
-/* Status & Payment */
+table tbody tr:hover {
+  background-color: #f9f9f9;
+}
+
+/* Status & Payment based on Payment Method */
 .status,
 .payment {
   padding: 6px 12px;
@@ -189,61 +186,93 @@ table th {
   font-weight: 600;
   display: inline-block;
   text-align: center;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.status.available { background-color: #e0f8e0; color: #28a745; }
-.status.booked    { background-color: #fde0e0; color: #dc3545; }
-
-.payment.paid     { background-color: #e0f8e0; color: #28a745; }
-.payment.pending  { background-color: #fff4e0; color: #ffc107; }
-
-/* Buttons */
-.view-btn, .delete-btn {
-  border: none;
-  padding: 6px 12px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: bold;
-  color: #fff;
-  transition: all 0.3s ease;
+.status.pending {
+  background-color: #fff4e0;
+  color: #ffc107;
+}
+.status.confirmed {
+  background-color: #e0f8e0;
+  color: #28a745;
 }
 
-.view-btn { background: #28a745; }
-.view-btn:hover { background: #218838; }
-
-.delete-btn { background: #dc3545; }
-.delete-btn:hover { background: #c82333; }
-
-/* Billing History Section */
-.billing-history {
-  margin-top: 35px;
+.payment.pending {
+  background-color: #fff4e0;
+  color: #ffc107;
+}
+.payment.paid {
+  background-color: #e0f8e0;
+  color: #28a745;
 }
 
-.billing-history h2 {
-  font-size: 18px;
-  margin-bottom: 15px;
-  font-weight: 600;
-  color: #333;
-}
-
-.billing-history .filters {
-  margin-bottom: 15px;
-}
-
-.billing-history table th,
-.billing-history table td {
-  font-size: 13px;
-  padding: 12px 14px;
-}
-
+/* Action Buttons */
 .actions {
   display: flex;
-  gap: 10px;
-  justify-content: center;
+  gap: 8px;
 }
 
-table tbody tr:hover {
-  background-color: #f9f9f9;
+.btn-confirm,
+.btn-delete {
+  padding: 6px 12px;
+  border-radius: 6px;
+  color: #fff;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: bold;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.btn-confirm {
+  background-color: #28a745;
+}
+
+.btn-confirm:hover {
+  background-color: #218838;
+}
+
+.btn-delete {
+  background-color: #dc3545;
+}
+
+.btn-delete:hover {
+  background-color: #c82333;
+}
+.status.canceled {
+  color: red;
+  font-weight: bold;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  gap: 8px;
+}
+
+.pagination a {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 2px;
+  background-color: #fff; /* neutral */
+  color: #333;
+  text-decoration: none;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); /* strong shadow */
+  transition: all 0.2s ease;
+}
+
+.pagination a:hover {
+  background-color: #f0f0f0;
+}
+
+.pagination a.active {
+  background-color: #ddd; /* neutral active color */
+  color: #000;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25); /* deeper shadow for active */
 }

@@ -13,10 +13,17 @@ class Room
         $this->db = $db;
     }
 
-    public function getAllRooms()
+    public function getAllRooms($limit = null)
     {
-        $stmt = $this->db->query("SELECT * FROM rooms");
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        if ($limit) {
+            $stmt = $this->db->prepare("SELECT * FROM rooms LIMIT :limit");
+            $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } else {
+            $stmt = $this->db->query("SELECT * FROM rooms");
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        }
     }
 
     public function getRoomById($roomId)
@@ -33,5 +40,21 @@ class Room
             ':status' => $status,
             ':room_id' => $roomId
         ]);
+    }
+
+    public function getRoomsRange($offset = 0, $limit = 6)
+    {
+        $stmt = $this->db->prepare("SELECT * FROM rooms ORDER BY RoomID ASC LIMIT :limit OFFSET :offset");
+        $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function countAvailableRooms()
+    {
+        $sql = "SELECT COUNT(*) FROM rooms WHERE availability = 'available'";
+        $stmt = $this->db->query($sql);
+        return $stmt->fetchColumn();
     }
 }

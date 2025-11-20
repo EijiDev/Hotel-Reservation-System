@@ -9,11 +9,11 @@ body {
 
 /* Hero Section */
 .hero-section {
-  background-image: url("../assets/background.jpg");
+  background: linear-gradient(to right, #800020, #d9534f);
   background-repeat: no-repeat;
   background-position: center;
   background-size: cover;
-  height: 100vh;
+  height: 85vh;
   display: flex;
   align-items: center;
   justify-content: center;

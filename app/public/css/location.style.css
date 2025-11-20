@@ -1,0 +1,25 @@
+.hero-section {
+  text-align: center;
+}
+
+.location-header {
+  margin: 20px 0;
+  font-size: 45px;
+  font-weight: bolder;
+  text-align: center;
+  color: #6d0101;
+}
+
+.location-subtext {
+  color: #6c757d;
+  text-align: center;
+}
+
+#map {
+  height: 500px;
+  width: 90%;
+  max-width: 1200px;
+  margin: 0 auto 40px auto;
+  border-radius: 5px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}

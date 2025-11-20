@@ -16,6 +16,14 @@
   margin-bottom: 20px;
 }
 
+.card-header h2 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin: 0;
+  line-height: 1.2;
+  text-align: left;
+}
+
 .about-header {
   font-size: 45px;
   font-weight: bolder;
@@ -191,10 +199,9 @@
 }
 
 .features .feature-item i {
-  margin-right: 8px; 
+  margin-right: 8px;
 }
 
 .availability i {
   margin-right: 8px;
 }
-

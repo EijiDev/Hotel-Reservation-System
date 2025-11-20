@@ -8,10 +8,14 @@
 
     <div class="room-grid">
         <?php if (!empty($rooms)): ?>
-            <?php foreach ($rooms as $room): ?>
+            <?php
+            // Limit to first 6 rooms
+            $roomsToShow = array_slice($rooms, 0, 6);
+            ?>
+            <?php foreach ($roomsToShow as $room): ?>
                 <div class="room-card">
                     <img src="./assets/<?= htmlspecialchars($room['image']) ?>"
-                        alt="<?= htmlspecialchars($room['name']) ?>">
+                         alt="<?= htmlspecialchars($room['name']) ?>">
                     <div class="card-content">
                         <div class="card-header">
                             <h2><?= htmlspecialchars($room['name']) ?></h2>
@@ -23,19 +27,34 @@
                         </p>
                         <div class="availability">
                             <?php if ($room['availability'] === 'Available'): ?>
-                                <i class="fa-solid fa-check available-icon" style="color: green;"></i><p style="color: green;">Available</p>
+                                <i class="fa-solid fa-check available-icon" style="color: green;"></i>
+                                <p style="color: green;">Available</p>
                             <?php else: ?>
-                                <i class="fa-solid fa-times unavailable-icon" style="color: red;"></i><p style="color: red;">Not Available</p>
+                                <i class="fa-solid fa-times unavailable-icon" style="color: red;"></i>
+                                <p style="color: red;">Not Available</p>
                             <?php endif; ?>
                         </div>
                         <p class="card-description"><?= htmlspecialchars($room['description']) ?></p>
 
                         <div class="features">
-                            <span class="feature-item"><i class="fa-solid fa-wifi"></i> WiFi</span>
-                            <span class="feature-item"><i class="fa-solid fa-square-parking"></i> Parking</span>
-                            <span class="feature-item"><i class="fa-solid fa-dumbbell"></i> Gym Access</span>
+                            <?php if (!empty($room['amenities'])): ?>
+                                <?php
+                                $amenities = explode(',', $room['amenities']);
+                                $icons = [
+                                    'WiFi' => 'fa-wifi',
+                                    'Parking' => 'fa-square-parking',
+                                    'Gym' => 'fa-dumbbell',
+                                    'Utensils' => 'fa-utensils'
+                                ];
+                                ?>
+                                <?php foreach ($amenities as $amenity): ?>
+                                    <span class="feature-item">
+                                        <i class="fa-solid <?= $icons[trim($amenity)] ?? 'fa-circle' ?>"></i>
+                                        <?= htmlspecialchars(trim($amenity)) ?>
+                                    </span>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
                         </div>
-
                         <div class="card-footer">
                             <div class="card-price">
                                 ₱<?= number_format($room['price'], 2) ?><span class="card-day">/night</span>
