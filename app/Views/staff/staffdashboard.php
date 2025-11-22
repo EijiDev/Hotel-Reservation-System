@@ -31,7 +31,7 @@ if (session_status() === PHP_SESSION_NONE) session_start();
             <div class="card">
                 <h3>Total Bookings</h3>
                 <p><?= $stats['total_bookings'] ?? 0 ?></p>
-                <small>All assigned bookings</small>
+                <small>All recorded bookings</small>
             </div>
 
             <div class="card">
@@ -44,6 +44,12 @@ if (session_status() === PHP_SESSION_NONE) session_start();
                 <h3>Available Rooms</h3>
                 <p><?= $stats['available_rooms'] ?? 0 ?></p>
                 <small>Rooms ready for booking</small>
+            </div>
+
+            <div class="card">
+                <h3>Pending Bookings</h3>
+                <p><?= $stats['pending_bookings'] ?? 0 ?></p>
+                <small>Awaiting confirmation</small>
             </div>
         </div>
 
@@ -69,27 +75,57 @@ if (session_status() === PHP_SESSION_NONE) session_start();
                     <?php if (!empty($bookings)): ?>
                         <?php foreach ($bookings as $booking): ?>
                             <?php
+                            // booking_status comes from booking_status table via JOIN
                             $bookingStatus = strtolower($booking['booking_status'] ?? 'pending');
-                            $confirmDisabled = ($bookingStatus === 'confirmed' || $bookingStatus === 'canceled');
+                            
+                            // payment_method comes from payments table
+                            $paymentMethod = $booking['payment_method'] ?? 'Cash';
+                            
+                            // payment_status comes from payments table
+                            $paymentStatus = strtolower($booking['payment_status'] ?? 'pending');
+                            
+                            // Disable confirm button if already confirmed or cancelled
+                            $confirmDisabled = in_array($bookingStatus, ['confirmed', 'cancelled', 'checked-in', 'checked-out']);
+                            
+                            // TotalAmount comes from payments.Amount
+                            $totalAmount = $booking['TotalAmount'] ?? 0;
                             ?>
                             <tr>
                                 <td><?= $booking['BookingID'] ?></td>
+                                <!-- GuestName comes from useraccounts via JOIN -->
                                 <td><?= htmlspecialchars($booking['GuestName'] ?? 'Unknown') ?></td>
+                                <!-- RoomType comes from roomtypes via JOIN -->
                                 <td><?= htmlspecialchars($booking['RoomType'] ?? 'Unknown') ?></td>
                                 <td><?= $booking['CheckIn'] ?? 'N/A' ?></td>
                                 <td><?= $booking['CheckOut'] ?? 'N/A' ?></td>
                                 <td><span class="status <?= $bookingStatus ?>"><?= ucfirst($bookingStatus) ?></span></td>
-                                <td><span class="payment"><?= ucfirst($booking['payment_status'] ?? 'pending') ?></span></td>
-                                <td><?= ucfirst($booking['Payment_Method'] ?? 'Cash') ?></td>
-                                <td>₱<?= number_format($booking['TotalAmount'] ?? 0, 2) ?></td>
+                                <td><span class="payment <?= $paymentStatus ?>"><?= ucfirst($paymentStatus) ?></span></td>
+                                <td><?= ucfirst($paymentMethod) ?></td>
+                                <td>₱<?= number_format($totalAmount, 2) ?></td>
                                 <td class="actions">
                                     <a href="/Hotel_Reservation_System/app/public/index.php?controller=staff&action=confirm&booking_id=<?= $booking['BookingID'] ?>"
-                                        style="background: <?= ($booking['booking_status'] == 'confirmed') ? '#6cbb6c' : '#28a745' ?>;
-          color:#fff; padding:6px 12px; border-radius:6px; text-decoration:none;
-          pointer-events: <?= ($booking['booking_status'] == 'confirmed') ? 'none' : 'auto' ?>;
-          opacity: <?= ($booking['booking_status'] == 'confirmed') ? '0.6' : '1' ?>;">
+                                        style="background: <?= $confirmDisabled ? '#6cbb6c' : '#28a745' ?>;
+                                               color:#fff; padding:6px 12px; border-radius:6px; text-decoration:none;
+                                               pointer-events: <?= $confirmDisabled ? 'none' : 'auto' ?>;
+                                               opacity: <?= $confirmDisabled ? '0.6' : '1' ?>;">
                                         Confirm
                                     </a>
+                                    
+                                    <!-- Check-in button (only for confirmed bookings) -->
+                                    <?php if ($bookingStatus === 'confirmed'): ?>
+                                        <a href="/Hotel_Reservation_System/app/public/index.php?controller=staff&action=checkin&id=<?= $booking['BookingID'] ?>"
+                                            style="background: #007bff; color:#fff; padding:6px 12px; border-radius:6px; text-decoration:none; margin-left: 5px;">
+                                            Check-in
+                                        </a>
+                                    <?php endif; ?>
+                                    
+                                    <!-- Check-out button (only for checked-in bookings) -->
+                                    <?php if ($bookingStatus === 'checked-in'): ?>
+                                        <a href="/Hotel_Reservation_System/app/public/index.php?controller=staff&action=checkout&id=<?= $booking['BookingID'] ?>"
+                                            style="background: #6c757d; color:#fff; padding:6px 12px; border-radius:6px; text-decoration:none; margin-left: 5px;">
+                                            Check-out
+                                        </a>
+                                    <?php endif; ?>
                                 </td>
                             </tr>
                         <?php endforeach; ?>

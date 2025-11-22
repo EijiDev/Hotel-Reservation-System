@@ -19,10 +19,9 @@
         <div class="hero-container">
             <h1 class="main-header">Welcome to Lunera Hotel and Grill</h1>
             <p>Where comfort meets flavor, and every stay feels like home.</p>
-            <button id="view-btn">View Rooms</button>
-
+            <a href="/Hotel_Reservation_System/app/public/index.php?controller=room&action=availableRooms">View Rooms</a>
             <?php if (!isset($_SESSION['user_id'])): ?>
-                <button id="signup-btn" onclick="window.location.href='/Hotel_Reservation_System/app/views/signup.php'">
+                <button id="signup-btn" onclick="window.location.href='/Hotel_Reservation_System/app/views/signup.php'" style="padding: 12px; width: 6rem; font-weight: bold; font-size: medium; border-radius: 6px;">
                     Sign up
                 </button>
             <?php endif; ?>

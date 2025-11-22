@@ -14,14 +14,15 @@ class User
     }
 
     /**
-     * Get user by email
+     * Get user by email with role information
      */
     public function getUserByEmail($email)
     {
         $stmt = $this->db->prepare("
-            SELECT UserID, Name, Email, UserPassword, role 
-            FROM useraccounts 
-            WHERE Email = :email 
+            SELECT u.UserID, u.Name, u.Email, u.UserPassword, u.RoleID, r.RoleName
+            FROM useraccounts u
+            JOIN roles r ON u.RoleID = r.RoleID
+            WHERE u.Email = :email 
             LIMIT 1
         ");
         
@@ -30,26 +31,26 @@ class User
         
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
         
-        // Rename UserPassword to Password for consistency in controllers
+        // Normalize field names for consistency
         if ($user && isset($user['UserPassword'])) {
             $user['Password'] = $user['UserPassword'];
-            $user['Role'] = $user['role']; // Also normalize role
+            $user['Role'] = $user['RoleName'];
             unset($user['UserPassword']);
-            unset($user['role']);
         }
         
         return $user;
     }
 
     /**
-     * Get user by ID
+     * Get user by ID with role information
      */
     public function getUserById($userId)
     {
         $stmt = $this->db->prepare("
-            SELECT UserID, Name, Email, role 
-            FROM useraccounts 
-            WHERE UserID = :user_id 
+            SELECT u.UserID, u.Name, u.Email, u.RoleID, r.RoleName, u.Created_at
+            FROM useraccounts u
+            JOIN roles r ON u.RoleID = r.RoleID
+            WHERE u.UserID = :user_id 
             LIMIT 1
         ");
         
@@ -58,10 +59,9 @@ class User
         
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
         
-        // Normalize role column name
-        if ($user && isset($user['role'])) {
-            $user['Role'] = $user['role'];
-            unset($user['role']);
+        // Normalize field names
+        if ($user && isset($user['RoleName'])) {
+            $user['Role'] = $user['RoleName'];
         }
         
         return $user;
@@ -70,7 +70,7 @@ class User
     /**
      * Create new user account
      */
-    public function create($name, $email, $password, $role = 'user')
+    public function create($name, $email, $password, $roleId = 2)
     {
         // Check if email already exists
         if ($this->getUserByEmail($email)) {
@@ -82,14 +82,14 @@ class User
         $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
         $stmt = $this->db->prepare("
-            INSERT INTO useraccounts (Name, Email, UserPassword, role) 
-            VALUES (:name, :email, :password, :role)
+            INSERT INTO useraccounts (Name, Email, UserPassword, RoleID) 
+            VALUES (:name, :email, :password, :role_id)
         ");
 
         $stmt->bindParam(':name', $name, PDO::PARAM_STR);
         $stmt->bindParam(':email', $email, PDO::PARAM_STR);
         $stmt->bindParam(':password', $hashedPassword, PDO::PARAM_STR);
-        $stmt->bindParam(':role', $role, PDO::PARAM_STR);
+        $stmt->bindParam(':role_id', $roleId, PDO::PARAM_INT);
 
         try {
             if ($stmt->execute()) {
@@ -129,7 +129,7 @@ class User
      */
     public function updateUser($userId, $data)
     {
-        $allowedFields = ['Name' => 'Name', 'Email' => 'Email', 'role' => 'role'];
+        $allowedFields = ['Name' => 'Name', 'Email' => 'Email', 'RoleID' => 'RoleID'];
         $updateFields = [];
         $params = [':user_id' => $userId];
 
@@ -162,23 +162,23 @@ class User
     }
 
     /**
-     * Get all users (for admin)
+     * Get all users with role information (for admin)
      */
     public function getAllUsers()
     {
         $stmt = $this->db->query("
-            SELECT UserID, Name, Email, role, Created_at 
-            FROM useraccounts 
-            ORDER BY UserID DESC
+            SELECT u.UserID, u.Name, u.Email, u.RoleID, r.RoleName, u.Created_at 
+            FROM useraccounts u
+            JOIN roles r ON u.RoleID = r.RoleID
+            ORDER BY u.UserID DESC
         ");
 
         $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
-        // Normalize role column
+        // Normalize field names
         foreach ($users as &$user) {
-            if (isset($user['role'])) {
-                $user['Role'] = $user['role'];
-                unset($user['role']);
+            if (isset($user['RoleName'])) {
+                $user['Role'] = $user['RoleName'];
             }
         }
         
@@ -191,5 +191,18 @@ class User
     public function emailExists($email)
     {
         return (bool) $this->getUserByEmail($email);
+    }
+
+    /**
+     * Get role ID by role name
+     */
+    public function getRoleIdByName($roleName)
+    {
+        $stmt = $this->db->prepare("SELECT RoleID FROM roles WHERE RoleName = :role_name LIMIT 1");
+        $stmt->bindParam(':role_name', $roleName, PDO::PARAM_STR);
+        $stmt->execute();
+        
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result ? $result['RoleID'] : null;
     }
 }

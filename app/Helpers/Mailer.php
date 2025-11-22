@@ -7,7 +7,6 @@ use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 
 require __DIR__ . '/../../vendor/autoload.php';
-
 class Mailer
 {
     public static function sendBookingConfirmation($toEmail, $toName, $bookingDetails)
@@ -15,16 +14,17 @@ class Mailer
         $mail = new PHPMailer(true);
 
         try {
+            // SMTP settings from .env
             $mail->isSMTP();
-            $mail->Host       = 'smtp.gmail.com';
+            $mail->Host       = $_ENV['MAIL_HOST'];
             $mail->SMTPAuth   = true;
-            $mail->Username   = 'hpl78910@gmail.com';
-            $mail->Password   = 'cknn jsoq vhmm oedl';
+            $mail->Username   = $_ENV['MAIL_USERNAME'];
+            $mail->Password   = $_ENV['MAIL_PASSWORD'];
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-            $mail->Port       = 587;
+            $mail->Port       = $_ENV['MAIL_PORT'];
 
             // Sender & recipient
-            $mail->setFrom('hpl78910@gmail.com', 'Lunera Hotel');
+            $mail->setFrom($_ENV['MAIL_FROM'], $_ENV['MAIL_FROM_NAME']);
             $mail->addAddress($toEmail, $toName);
 
             // Email content

@@ -3,17 +3,19 @@ require_once __DIR__ . '/../../vendor/autoload.php';
 
 use App\Config\Database;
 use App\Models\Room;
+use App\Models\Booking;
 
 if (session_status() === PHP_SESSION_NONE) session_start();
 
 $db = (new Database())->connect();
 $roomModel = new Room($db);
+$bookingModel = new Booking($db);
 
 // Editing booking (from controller)
 $editingBooking = $editingBooking ?? null;
 
-// Get room ID from URL or from editingBooking
-$roomId = $_GET['room_id'] ?? ($editingBooking['room_id'] ?? null);
+// Get room ID from URL or editingBooking
+$roomId = $_GET['room_id'] ?? ($editingBooking['RoomID'] ?? null);
 
 if ($roomId) {
     $room = $roomModel->getRoomById($roomId);
@@ -22,8 +24,32 @@ if ($roomId) {
     die("No room selected.");
 }
 
-// Price per night
-$pricePerNight = $room['price'];
+// Price per night from roomtypes table
+$pricePerNight = $room['room_price'] ?? $room['Price'];
+
+// Check room availability - Status is now from rooms table
+$isAvailable = (strtolower($room['Status']) === 'available');
+
+// Get existing bookings ONLY for THIS specific room
+$existingBookings = $bookingModel->getBookingsByRoomId($room['RoomID']);
+$unavailableDates = [];
+
+foreach ($existingBookings as $b) {
+    // Skip cancelled bookings
+    if (isset($b['booking_status']) && strtolower($b['booking_status']) === 'cancelled') continue;
+
+    // Skip current booking if editing
+    if ($editingBooking && $b['BookingID'] == $editingBooking['BookingID']) continue;
+
+    $bCheckIn = $b['CheckIn'];
+    $bCheckOut = $b['CheckOut'];
+
+    // Store unavailable date ranges for validation (only for THIS room)
+    $unavailableDates[] = [
+        'checkin' => $bCheckIn,
+        'checkout' => $bCheckOut
+    ];
+}
 ?>
 
 <!DOCTYPE html>
@@ -33,7 +59,6 @@ $pricePerNight = $room['price'];
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= isset($editingBooking) ? "Edit Booking" : "Hotel Booking" ?></title>
-
     <link rel="stylesheet" href="../public/css/roombookings.css">
     <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -44,27 +69,36 @@ $pricePerNight = $room['price'];
     <?php include "layouts/navigation.php"; ?>
 
     <div class="container">
-
+        <!-- ROOM DETAILS -->
         <div class="room-card">
-            <img src="../public/assets/<?= htmlspecialchars($room['image']) ?>" class="room-image">
+            <img src="../public/assets/<?= htmlspecialchars($room['image'] ?? 'default-room.jpg') ?>" class="room-image">
             <div class="room-details">
                 <h2>
-                    <?= htmlspecialchars($room['name']) ?>
-                    <span class="rating"><?= htmlspecialchars($room['rating']) ?></span>
+                    <!-- room_name from roomtypes table -->
+                    <?= htmlspecialchars($room['room_name']) ?>
+                    <span class="rating"><?= htmlspecialchars($room['rating'] ?? '4.5') ?></span>
                 </h2>
-
                 <p class="room-info">
-                    <i class="bx bx-hash"></i> Room ID: <?= htmlspecialchars($room['RoomID']) ?> &nbsp;&nbsp;
-                    <i class="bx bx-building"></i> Floor: <?= htmlspecialchars($room['floor'] ?? 'N/A') ?>
+                    <i class="bx bx-hash"></i> Room #<?= htmlspecialchars($room['RoomNumber'] ?? $room['RoomID']) ?> &nbsp;&nbsp;
+                    <i class="bx bx-building"></i> Floor: <?= htmlspecialchars($room['Floor'] ?? 'N/A') ?>
                 </p>
-
-                <p class="description"><?= htmlspecialchars($room['description']) ?></p>
+                <!-- Description from roomtypes table -->
+                <p class="description"><?= htmlspecialchars($room['Description']) ?></p>
+                <!-- Price from roomtypes table -->
                 <p class="price"><span class="amount">₱<?= number_format($pricePerNight, 2) ?></span> <span class="per-night">/night</span></p>
+
+                <?php if (count($unavailableDates) > 0): ?>
+                    <div style="margin-top: 15px; padding: 10px; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px;">
+                        <p style="margin: 0; font-size: 14px; color: #856404;">
+                            <i class="bx bx-info-circle"></i> <strong>Note:</strong> This room has existing bookings. Please select available dates.
+                        </p>
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
 
         <!-- BOOKING FORM -->
-        <div class="booking-form">
+        <div class="booking-form <?= !$isAvailable && !isset($editingBooking) ? 'disabled-form' : '' ?>">
             <div class="booking-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <h2><?= isset($editingBooking) ? "Edit Your Booking" : "Complete Your Booking" ?></h2>
                 <button type="button" class="back-btn" onclick="history.back()">
@@ -72,7 +106,19 @@ $pricePerNight = $room['price'];
                 </button>
             </div>
 
-            <form id="bookingForm" method="POST" action="/Hotel_Reservation_System/app/public/index.php?controller=booking&action=store">
+            <?php if (!$isAvailable && !isset($editingBooking)): ?>
+                <div style="background: #f8d7da; padding: 15px; border-radius: 5px; margin-bottom: 20px; color: #721c24;">
+                    <i class="bx bx-error-circle"></i> <strong>This room is currently unavailable for new bookings.</strong>
+                </div>
+            <?php endif; ?>
+
+            <form id="bookingForm"
+                method="POST"
+                action="/Hotel_Reservation_System/app/public/index.php?controller=booking&action=store"
+                data-price-per-night="<?= $pricePerNight ?>"
+                data-room-number="<?= htmlspecialchars($room['RoomNumber'] ?? $room['RoomID']) ?>"
+                data-unavailable-dates='<?= json_encode($unavailableDates) ?>'>
+
                 <input type="hidden" name="room_id" value="<?= htmlspecialchars($room['RoomID']) ?>">
                 <input type="hidden" name="booking_id" value="<?= $editingBooking['BookingID'] ?? '' ?>">
 
@@ -81,7 +127,11 @@ $pricePerNight = $room['price'];
                         <label>Check-in</label>
                         <div class="input-group">
                             <i class="bx bx-calendar"></i>
-                            <input type="date" name="checkin" required value="<?= $editingBooking['CheckIn'] ?? '' ?>">
+                            <input type="date"
+                                name="checkin"
+                                required
+                                min="<?= date('Y-m-d') ?>"
+                                value="<?= $editingBooking['CheckIn'] ?? '' ?>">
                         </div>
                     </div>
 
@@ -89,7 +139,11 @@ $pricePerNight = $room['price'];
                         <label>Check-out</label>
                         <div class="input-group">
                             <i class="bx bx-calendar"></i>
-                            <input type="date" name="checkout" required value="<?= $editingBooking['CheckOut'] ?? '' ?>">
+                            <input type="date"
+                                name="checkout"
+                                required
+                                min="<?= date('Y-m-d', strtotime('+1 day')) ?>"
+                                value="<?= $editingBooking['CheckOut'] ?? '' ?>">
                         </div>
                     </div>
                 </div>
@@ -135,22 +189,25 @@ $pricePerNight = $room['price'];
                     <i class="bx bx-credit-card"></i>
                     <select name="payment_method" required>
                         <option value="">Select a payment method</option>
-                        <option value="Cash" <?= isset($editingBooking) && $editingBooking['Payment_Method'] === 'Cash' ? 'selected' : '' ?>>Cash</option>
-                        <option value="GCash" <?= isset($editingBooking) && $editingBooking['Payment_Method'] === 'GCash' ? 'selected' : '' ?>>GCash</option>
+                        <!-- payment_method now comes from payments table -->
+                        <option value="Cash" <?= isset($editingBooking) && $editingBooking['payment_method'] === 'Cash' ? 'selected' : '' ?>>Cash</option>
+                        <option value="GCash" <?= isset($editingBooking) && $editingBooking['payment_method'] === 'GCash' ? 'selected' : '' ?>>GCash</option>
                     </select>
                 </div>
 
-                <button type="submit" id="openModalBtn"><?= isset($editingBooking) ? 'Update Booking' : 'Submit' ?></button>
+                <button type="submit" id="openModalBtn" <?= !$isAvailable && !isset($editingBooking) ? 'disabled style="background:#ccc; cursor:not-allowed;"' : '' ?>>
+                    <?= isset($editingBooking) ? 'Update Booking' : 'Submit' ?>
+                </button>
             </form>
         </div>
     </div>
 
-    <!-- CONFIRM MODAL -->
+    <!-- CONFIRMATION MODAL -->
     <div id="modal" class="modal" style="display:none;">
         <div class="modal-content">
             <h2 class="modal-title">Confirm Your Booking</h2>
             <p class="modal-sub">Please review your booking details before confirming.</p>
-            <h3 class="room-title"><?= htmlspecialchars($room['name']) ?></h3>
+            <h3 class="room-title"><?= htmlspecialchars($room['room_name']) ?> - Room #<?= htmlspecialchars($room['RoomNumber'] ?? $room['RoomID']) ?></h3>
 
             <div class="detail-row"><span>Check-in:</span><span id="m_checkin"></span></div>
             <div class="detail-row"><span>Check-out:</span><span id="m_checkout"></span></div>
@@ -178,79 +235,11 @@ $pricePerNight = $room['price'];
 
             <div class="btn-group">
                 <button class="confirm-btn" id="confirmSubmit">Confirm Booking</button>
+                <button class="cancel-btn" id="cancelModal">Cancel</button>
             </div>
         </div>
     </div>
-
-    <!-- PENDING MODAL -->
-    <div id="pendingModal" class="modal" style="display:none;">
-        <div class="modal-content">
-            <h2>Booking Submitted!</h2>
-            <p>Thank you for booking. Your booking is now <strong>pending</strong>. You will receive an email once it is confirmed by our staff.</p>
-            <button id="pendingCloseBtn" style="text-align: center;">OK</button>
-        </div>
-    </div>
-
-    <script>
-        const modal = document.getElementById("modal");
-        const pendingModal = document.getElementById("pendingModal");
-        const form = document.getElementById("bookingForm");
-        const confirmSubmit = document.getElementById("confirmSubmit");
-
-        const pricePerNight = <?= $pricePerNight ?>;
-        const guestExtraFee = 300;
-
-        // Open confirm modal on submit
-        form.addEventListener("submit", e => {
-            e.preventDefault();
-
-            const checkin = new Date(form.checkin.value);
-            const checkout = new Date(form.checkout.value);
-            const guests = parseInt(form.guests.value);
-
-            if (checkout <= checkin) {
-                alert("Checkout must be after check-in.");
-                return;
-            }
-
-            const nights = Math.ceil((checkout - checkin) / (1000 * 60 * 60 * 24));
-            const roomTotal = pricePerNight * nights;
-            const guestFee = guests > 1 ? (guests - 1) * guestExtraFee : 0;
-            const total = roomTotal + guestFee;
-
-            // Fill confirm modal values
-            document.getElementById("m_checkin").textContent = form.checkin.value;
-            document.getElementById("m_checkout").textContent = form.checkout.value;
-            document.getElementById("m_guests").textContent = guests;
-            document.getElementById("m_time").textContent = form.checkin_time.value;
-            document.getElementById("m_nights_text").textContent = `₱${pricePerNight.toLocaleString()} × ${nights} night(s)`;
-            document.getElementById("m_roomtotal").textContent = `₱${roomTotal.toLocaleString()}`;
-            document.getElementById("m_guestfee").textContent = `₱${guestFee.toLocaleString()}`;
-            document.getElementById("m_total").textContent = `₱${total.toLocaleString()}`;
-
-            modal.style.display = "flex";
-        });
-
-        // Confirm booking → show pending modal, then submit form
-        confirmSubmit.addEventListener("click", () => {
-            modal.style.display = "none";
-            pendingModal.style.display = "flex";
-
-            setTimeout(() => {
-                form.submit();
-            }, 500);
-        });
-
-        // Close pending modal manually
-        document.getElementById("pendingCloseBtn").addEventListener("click", () => {
-            pendingModal.style.display = "none";
-        });
-
-        // Close modals if clicking outside
-        window.onclick = e => {
-            if (e.target === modal) modal.style.display = "none";
-            if (e.target === pendingModal) pendingModal.style.display = "none";
-        }
-    </script>
+    <script src="../public/js/bookingsvalidation.js"></script>
 </body>
+
 </html>

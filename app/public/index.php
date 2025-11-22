@@ -7,9 +7,9 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Session timeout check (2 hours)
+// Session timeout check (30 minutes = 1800 seconds) - UNIFIED CHECK
 if (isset($_SESSION['user_id'])) {
-    if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > 7200)) {
+    if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > 1800)) {
         session_unset();
         session_destroy();
         session_start();
@@ -74,8 +74,9 @@ switch ($controllerName) {
         exit;
 
     case 'booking':
-        if (!isset($_SESSION['user_id'])) {
-            header("Location: /Hotel_Reservation_System/app/public/index.php?controller=login&action=index");
+        // Check if user is logged in AND has 'user' role
+        if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || strtolower($_SESSION['role']) !== 'user') {
+            header("Location: /Hotel_Reservation_System/app/public/index.php?controller=login&action=index&error=unauthorized");
             exit;
         }
         $controller = new BookingController($db);
@@ -93,7 +94,7 @@ switch ($controllerName) {
             header("Location: /Hotel_Reservation_System/app/public/index.php?controller=login&action=index&error=unauthorized");
             exit;
         }
-        $controller = new AdminController($db);
+        $controller = new AdminController();
         break;
 
     case 'staff':
@@ -104,7 +105,7 @@ switch ($controllerName) {
             header("Location: /Hotel_Reservation_System/app/public/index.php?controller=login&action=index&error=unauthorized");
             exit;
         }
-        $controller = new StaffController(); // No $db parameter
+        $controller = new StaffController();
         break;
 
     case 'logout':

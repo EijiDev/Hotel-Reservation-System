@@ -27,25 +27,26 @@
         <div class="stats">
             <div class="card">
                 <h3>Total Revenue</h3>
-                <p>₱<?= number_format($stats['total_revenue'], 2) ?></p>
-                <small>Based on all bookings</small>
+                <!-- total_revenue now comes from payments table -->
+                <p>₱<?= number_format($stats['total_revenue'] ?? 0, 2) ?></p>
+                <small>Based on completed payments</small>
             </div>
 
             <div class="card">
                 <h3>Total Bookings</h3>
-                <p><?= $stats['total_bookings'] ?></p>
+                <p><?= $stats['total_bookings'] ?? 0 ?></p>
                 <small>All recorded bookings</small>
             </div>
 
             <div class="card">
                 <h3>Upcoming Check-ins</h3>
-                <p><?= $stats['upcoming_checkins'] ?></p>
+                <p><?= $stats['upcoming_checkins'] ?? 0 ?></p>
                 <small>Within 7 days</small>
             </div>
 
             <div class="card">
                 <h3>Available Rooms</h3>
-                <p><?= $stats['available_rooms'] ?></p>
+                <p><?= $stats['available_rooms'] ?? 0 ?></p>
                 <small>Rooms ready for booking</small>
             </div>
         </div>
@@ -72,21 +73,33 @@
                     <?php if (!empty($bookings)): ?>
                         <?php foreach ($bookings as $b): ?>
                             <?php
+                            // booking_status comes from booking_status table via JOIN
                             $bookingStatus = strtolower($b['booking_status'] ?? 'pending');
-                            $paymentMethod = strtolower($b['PaymentMethod'] ?? 'cash');
-                            $paymentStatus = ($paymentMethod === 'gcash') ? 'paid' : 'pending';
-                            $confirmDisabled = ($bookingStatus === 'confirmed' || $bookingStatus === 'canceled');
+                            
+                            // payment_method comes from payments table
+                            $paymentMethod = $b['payment_method'] ?? 'Cash';
+                            
+                            // payment_status comes from payments table
+                            $paymentStatus = strtolower($b['payment_status'] ?? 'pending');
+                            
+                            // Disable confirm button if already confirmed or cancelled
+                            $confirmDisabled = in_array($bookingStatus, ['confirmed', 'cancelled', 'checked-in', 'checked-out']);
+                            
+                            // TotalAmount comes from payments.Amount
+                            $totalAmount = $b['TotalAmount'] ?? 0;
                             ?>
                             <tr>
                                 <td><?= $b['BookingID'] ?></td>
+                                <!-- GuestName comes from useraccounts via JOIN -->
                                 <td><?= htmlspecialchars($b['GuestName'] ?? 'Unknown') ?></td>
+                                <!-- RoomType comes from roomtypes via JOIN -->
                                 <td><?= htmlspecialchars($b['RoomType'] ?? 'Unknown') ?></td>
                                 <td><?= $b['CheckIn'] ?? 'N/A' ?></td>
                                 <td><?= $b['CheckOut'] ?? 'N/A' ?></td>
                                 <td><span class="status <?= $bookingStatus ?>"><?= ucfirst($bookingStatus) ?></span></td>
                                 <td><span class="payment <?= $paymentStatus ?>"><?= ucfirst($paymentStatus) ?></span></td>
-                                <td><?= ucfirst($b['PaymentMethod'] ?? 'Cash') ?></td>
-                                <td>₱<?= number_format($b['TotalAmount'] ?? 0, 2) ?></td>
+                                <td><?= ucfirst($paymentMethod) ?></td>
+                                <td>₱<?= number_format($totalAmount, 2) ?></td>
                                 <td class="actions">
                                     <a href="/Hotel_Reservation_System/app/public/index.php?controller=admin&action=confirm&id=<?= $b['BookingID'] ?>"
                                         class="btn-confirm"
@@ -110,11 +123,11 @@
             </table>
 
             <!-- Pagination -->
-            <?php if ($totalPages > 1): ?>
+            <?php if (($totalPages ?? 1) > 1): ?>
                 <div class="pagination">
-                    <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                    <?php for ($i = 1; $i <= ($totalPages ?? 1); $i++): ?>
                         <a href="?controller=admin&action=index&page=<?= $i ?>"
-                            class="<?= ($i === $page) ? 'active' : '' ?>">
+                            class="<?= ($i === ($page ?? 1)) ? 'active' : '' ?>">
                             <?= $i ?>
                         </a>
                     <?php endfor; ?>

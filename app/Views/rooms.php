@@ -14,19 +14,22 @@
             ?>
             <?php foreach ($roomsToShow as $room): ?>
                 <div class="room-card">
-                    <img src="./assets/<?= htmlspecialchars($room['image']) ?>"
-                         alt="<?= htmlspecialchars($room['name']) ?>">
+                    <!-- image is from rooms table -->
+                    <img src="./assets/<?= htmlspecialchars($room['image'] ?? 'default-room.jpg') ?>"
+                         alt="<?= htmlspecialchars($room['room_name']) ?>">
                     <div class="card-content">
                         <div class="card-header">
-                            <h2><?= htmlspecialchars($room['name']) ?></h2>
-                            <span class="rating"><?= htmlspecialchars($room['rating']) ?></span>
+                            <!-- room_name comes from roomtypes table via JOIN -->
+                            <h2><?= htmlspecialchars($room['room_name']) ?></h2>
+                            <span class="rating"><?= htmlspecialchars($room['rating'] ?? '4.5') ?></span>
                         </div>
                         <p class="card-details">
-                            Floor <?= htmlspecialchars($room['floor']) ?> |
-                            Room ID: <?= htmlspecialchars($room['room_id']) ?>
+                            Floor <?= htmlspecialchars($room['Floor']) ?> |
+                            Room #<?= htmlspecialchars($room['RoomNumber'] ?? $room['RoomID']) ?>
                         </p>
                         <div class="availability">
-                            <?php if ($room['availability'] === 'Available'): ?>
+                            <!-- Status is now from rooms table (enum: 'available', 'booked') -->
+                            <?php if (strtolower($room['Status']) === 'available'): ?>
                                 <i class="fa-solid fa-check available-icon" style="color: green;"></i>
                                 <p style="color: green;">Available</p>
                             <?php else: ?>
@@ -34,17 +37,22 @@
                                 <p style="color: red;">Not Available</p>
                             <?php endif; ?>
                         </div>
-                        <p class="card-description"><?= htmlspecialchars($room['description']) ?></p>
+                        <!-- Description comes from roomtypes table -->
+                        <p class="card-description"><?= htmlspecialchars($room['Description']) ?></p>
 
                         <div class="features">
-                            <?php if (!empty($room['amenities'])): ?>
+                            <!-- Amenities come from roomtypes table -->
+                            <?php if (!empty($room['Amenities'])): ?>
                                 <?php
-                                $amenities = explode(',', $room['amenities']);
+                                $amenities = explode(',', $room['Amenities']);
                                 $icons = [
                                     'WiFi' => 'fa-wifi',
                                     'Parking' => 'fa-square-parking',
                                     'Gym' => 'fa-dumbbell',
-                                    'Utensils' => 'fa-utensils'
+                                    'Utensils' => 'fa-utensils',
+                                    'TV' => 'fa-tv',
+                                    'Air Conditioning' => 'fa-snowflake',
+                                    'Mini Bar' => 'fa-wine-glass'
                                 ];
                                 ?>
                                 <?php foreach ($amenities as $amenity): ?>
@@ -57,7 +65,8 @@
                         </div>
                         <div class="card-footer">
                             <div class="card-price">
-                                ₱<?= number_format($room['price'], 2) ?><span class="card-day">/night</span>
+                                <!-- Price comes from roomtypes table -->
+                                ₱<?= number_format($room['Price'], 2) ?><span class="card-day">/night</span>
                             </div>
                             <?php if (isset($_SESSION['user_id'])): ?>
                                 <a href="/Hotel_Reservation_System/app/views/roombookings.php?room_id=<?= $room['RoomID'] ?>" class="book-now-btn">Book Now</a>

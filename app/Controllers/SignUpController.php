@@ -30,7 +30,6 @@ class SignUpController
 
     /**
      * Handle user registration with comprehensive validation
-     * Called by index.php when action=signup
      */
     public function signup($name, $email, $password)
     {
@@ -79,20 +78,23 @@ class SignUpController
             return;
         }
 
-        // Create user account
-        $userId = $this->userModel->create($name, $email, $password);
+        // Get the 'user' role ID (typically RoleID = 2)
+        $roleId = $this->userModel->getRoleIdByName('user');
+        
+        if (!$roleId) {
+            error_log("❌ Failed to get 'user' role ID");
+            $this->redirectWithError('registration_failed', 'System error. Please contact support');
+            return;
+        }
+
+        // Create user account with RoleID
+        $userId = $this->userModel->create($name, $email, $password, $roleId);
 
         if ($userId) {
             error_log("✅ New user registered: UserID=" . $userId . ", Email=" . $email);
             
-            // Auto-login after successful registration
-            session_regenerate_id(true);
-            $_SESSION['user_id'] = $userId;
-            $_SESSION['role'] = 'user'; // Default role for new registrations
-            $_SESSION['name'] = $name;
-            $_SESSION['last_activity'] = time();
-
-            header("Location: /Hotel_Reservation_System/app/public/index.php?controller=home&action=index&success=registered");
+            // Redirect to login page with success message (NO auto-login)
+            header("Location: /Hotel_Reservation_System/app/public/index.php?controller=login&action=index&success=registered");
             exit();
         } else {
             error_log("❌ Failed to create user account for: " . $email);
@@ -106,22 +108,18 @@ class SignUpController
      */
     private function validateName($name)
     {
-        // Check minimum length
         if (strlen($name) < 2) {
             return ['valid' => false, 'message' => 'Name must be at least 2 characters long'];
         }
 
-        // Check maximum length
         if (strlen($name) > 100) {
             return ['valid' => false, 'message' => 'Name must not exceed 100 characters'];
         }
 
-        // Check for valid characters (letters, spaces, hyphens, apostrophes)
         if (!preg_match("/^[a-zA-Z\s\-'\.]+$/u", $name)) {
             return ['valid' => false, 'message' => 'Name can only contain letters, spaces, hyphens, and apostrophes'];
         }
 
-        // Check for excessive spaces
         if (preg_match('/\s{2,}/', $name)) {
             return ['valid' => false, 'message' => 'Name contains excessive spaces'];
         }
@@ -134,17 +132,14 @@ class SignUpController
      */
     private function validateEmail($email)
     {
-        // Check email length
         if (strlen($email) > 255) {
             return ['valid' => false, 'message' => 'Email address is too long'];
         }
 
-        // Check for dangerous characters
         if (preg_match('/[<>]/', $email)) {
             return ['valid' => false, 'message' => 'Email contains invalid characters'];
         }
 
-        // Extract domain
         $parts = explode('@', $email);
         if (count($parts) !== 2) {
             return ['valid' => false, 'message' => 'Invalid email format'];
@@ -152,7 +147,6 @@ class SignUpController
 
         $domain = $parts[1];
 
-        // Check if domain has at least one dot
         if (strpos($domain, '.') === false) {
             return ['valid' => false, 'message' => 'Email domain is invalid'];
         }
@@ -165,37 +159,30 @@ class SignUpController
      */
     private function validatePassword($password)
     {
-        // Check minimum length
         if (strlen($password) < 8) {
             return ['valid' => false, 'message' => 'Password must be at least 8 characters long'];
         }
 
-        // Check maximum length
         if (strlen($password) > 128) {
             return ['valid' => false, 'message' => 'Password must not exceed 128 characters'];
         }
 
-        // Check for at least one uppercase letter
         if (!preg_match('/[A-Z]/', $password)) {
             return ['valid' => false, 'message' => 'Password must contain at least one uppercase letter'];
         }
 
-        // Check for at least one lowercase letter
         if (!preg_match('/[a-z]/', $password)) {
             return ['valid' => false, 'message' => 'Password must contain at least one lowercase letter'];
         }
 
-        // Check for at least one number
         if (!preg_match('/[0-9]/', $password)) {
             return ['valid' => false, 'message' => 'Password must contain at least one number'];
         }
 
-        // Check for at least one special character
         if (!preg_match('/[^A-Za-z0-9]/', $password)) {
             return ['valid' => false, 'message' => 'Password must contain at least one special character'];
         }
 
-        // Check for common weak passwords
         $weakPasswords = ['password123', '12345678', 'qwerty123', 'admin123', 'welcome123'];
         if (in_array(strtolower($password), $weakPasswords)) {
             return ['valid' => false, 'message' => 'Password is too common. Please choose a stronger password'];

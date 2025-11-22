@@ -4,41 +4,27 @@ body {
   background-color: #f9f9f9;
   margin: 0;
   padding: 0;
-  color: #555; /* grey text */
+  color: #555;
 }
 
-/* Container for bookings */
+/* Container for bookings — FIXED TO 3 COLUMNS */
 .container {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between; /* evenly space cards */
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* Always 3 cards per row */
   gap: 30px;
+  max-width: 1300px;
   margin: 20px auto;
   padding: 0 20px;
-  max-width: 1300px;
-}
-
-@media screen and (max-width: 1024px) {
-  .container {
-    justify-content: center;
-  }
-}
-
-@media screen and (max-width: 768px) {
-  .container {
-    flex-direction: column;
-    align-items: center;
-  }
 }
 
 /* Page Title */
 .title {
-  width: 100%;
+  grid-column: 1 / -1;
+  text-align: center;
   font-size: 2.5rem;
   font-weight: 700;
+  margin-bottom: 20px;
   color: #6d0101;
-  text-align: center;
-  margin-bottom: 10px;
 }
 
 .subtitle {
@@ -50,12 +36,10 @@ body {
 
 /* Booking Card */
 .booking-card {
-  flex: 1 1 calc(33% - 20px); /* 3 per row */
-  max-width: 400px;           /* reduce width to fit 3 cards */
   background-color: #fff;
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
   transition: transform 0.2s ease-in-out;
@@ -102,9 +86,17 @@ body {
   color: #fff;
 }
 
-.status.pending { background-color: #f1c40f; }
-.status.confirmed { background-color: #2ecc71; }
-.status.canceled { background-color: #e74c3c; }
+.status.pending {
+  background-color: #f1c40f;
+}
+
+.status.confirmed {
+  background-color: #2ecc71;
+}
+
+.status.canceled {
+  background-color: #e74c3c;
+}
 
 .room-details p {
   font-size: 0.95rem;
@@ -177,7 +169,7 @@ body {
 }
 
 .cancel-btn {
-  background-color: #e74c3c;
+  background-color: #6d0101;
   color: #fff;
   font-weight: bold;
 }
@@ -188,18 +180,4 @@ body {
 
 .check-info i {
   margin-right: 6px;
-}
-
-/* Responsive adjustments */
-@media screen and (max-width: 1024px) {
-  .booking-card {
-    flex: 1 1 calc(45% - 20px); /* 2 per row */
-  }
-}
-
-@media screen and (max-width: 768px) {
-  .booking-card {
-    flex: 1 1 100%; /* 1 per row */
-    max-width: 100%;
-  }
 }

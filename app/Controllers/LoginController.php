@@ -14,21 +14,52 @@ class LoginController
             session_start();
         }
 
-        // If already logged in, redirect
-        if (isset($_SESSION['user_id']) && isset($_SESSION['role'])) {
-            $this->redirectToDashboard();
-        }
-
         $this->userModel = $userModel;
     }
 
     public function index()
     {
+        // Check if already logged in when viewing the login page
+        if (isset($_SESSION['user_id']) && isset($_SESSION['role'])) {
+            $this->redirectBasedOnRole($_SESSION['role']);
+        }
+
+        // Initialize error variable for the view
+        $error = null;
+        $success = null;
+        
+        // Check for error messages in URL
+        if (isset($_GET['error'])) {
+            $errorMessages = [
+                'invalid_credentials' => 'Invalid email or password',
+                'empty_fields' => 'Please fill in all fields',
+                'unauthorized' => 'You do not have permission to access that page',
+                'session_expired' => 'Your session has expired. Please log in again.'
+            ];
+            
+            $error = $errorMessages[$_GET['error']] ?? 'An error occurred';
+        }
+
+        // Check for success messages (e.g., after signup)
+        if (isset($_GET['success'])) {
+            $successMessages = [
+                'registered' => 'Account created successfully! Please log in.'
+            ];
+            
+            $success = $successMessages[$_GET['success']] ?? 'Success!';
+        }
+        
         include __DIR__ . '/../Views/login.php';
     }
 
-    public function login($email, $password)
+    public function login($email = null, $password = null)
     {
+        // Get from POST if not passed as parameters
+        if ($email === null || $password === null) {
+            $email = $_POST['email'] ?? null;
+            $password = $_POST['password'] ?? null;
+        }
+
         // Validate input
         if (empty($email) || empty($password)) {
             header("Location: /Hotel_Reservation_System/app/public/index.php?controller=login&action=index&error=empty_fields");
@@ -43,13 +74,15 @@ class LoginController
             session_regenerate_id(true);
             
             $_SESSION['user_id'] = $user['UserID'];
-            $_SESSION['role'] = $user['Role']; // Now normalized from 'role' to 'Role'
+            $_SESSION['role'] = $user['Role'];
             $_SESSION['name'] = $user['Name'];
             $_SESSION['last_activity'] = time();
+            $_SESSION['last_activity_check'] = time();
 
             error_log("✅ User logged in: UserID=" . $user['UserID'] . ", Email=" . $email . ", Role=" . $user['Role']);
 
-            $this->redirectToDashboard();
+            // Redirect based on user role
+            $this->redirectBasedOnRole($user['Role']);
         } else {
             error_log("❌ Failed login attempt for: " . $email);
             header("Location: /Hotel_Reservation_System/app/public/index.php?controller=login&action=index&error=invalid_credentials");
@@ -57,23 +90,24 @@ class LoginController
         }
     }
 
-    private function redirectToDashboard()
+    /**
+     * Redirect user based on their role
+     */
+    private function redirectBasedOnRole($role)
     {
-        $role = $_SESSION['role'] ?? 'user';
-
-        error_log("🔄 Redirecting to dashboard. Role: " . $role);
-
-        switch ($role) {
+        switch (strtolower($role)) {
             case 'admin':
                 header("Location: /Hotel_Reservation_System/app/public/index.php?controller=admin&action=index");
-                break;
+                exit();
+            
             case 'staff':
                 header("Location: /Hotel_Reservation_System/app/public/index.php?controller=staff&action=index");
-                break;
+                exit();
+            
+            case 'user':
             default:
                 header("Location: /Hotel_Reservation_System/app/public/index.php?controller=home&action=index");
-                break;
+                exit();
         }
-        exit();
     }
 }
