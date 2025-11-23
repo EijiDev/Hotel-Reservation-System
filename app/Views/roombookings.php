@@ -235,7 +235,6 @@ foreach ($existingBookings as $b) {
 
             <div class="btn-group">
                 <button class="confirm-btn" id="confirmSubmit">Confirm Booking</button>
-                <button class="cancel-btn" id="cancelModal">Cancel</button>
             </div>
         </div>
     </div>

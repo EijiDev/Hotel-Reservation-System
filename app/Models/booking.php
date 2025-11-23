@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use PDO;
-
+use PDOException;
 class Booking
 {
     private $db;
@@ -33,6 +33,7 @@ class Booking
                 r.RoomNumber,
                 r.Floor,
                 r.Status AS room_status,
+                r.image AS room_image,
                 rt.Name AS room_name,
                 rt.Price AS room_price,
                 rt.Description AS room_description,
@@ -157,9 +158,6 @@ class Booking
         return false;
     }
 
-    /**
-     * Update an existing booking
-     */
     public function updateBooking($bookingId, $checkin, $checkout, $guests, $checkin_time, $contact, $email)
     {
         $sql = "
@@ -186,9 +184,6 @@ class Booking
         return $stmt->execute();
     }
 
-    /**
-     * Update booking status
-     */
     public function updateStatus($bookingId, $statusId)
     {
         $sql = "UPDATE bookings SET StatusID = :status_id WHERE BookingID = :booking_id";
@@ -206,9 +201,6 @@ class Booking
         return false;
     }
 
-    /**
-     * Update booking status by status name
-     */
     public function updateStatusByName($bookingId, $statusName)
     {
         $statusId = $this->getStatusIdByName($statusName);
@@ -220,17 +212,71 @@ class Booking
         return $this->updateStatus($bookingId, $statusId);
     }
 
-    /**
-     * Delete a booking
-     */
     public function deleteBooking($bookingId)
     {
-        $sql = "DELETE FROM bookings WHERE BookingID = :booking_id";
+        try {
+            // Start transaction to ensure all deletions happen together
+            $this->db->beginTransaction();
 
+            // Delete related guests first (child records)
+            $sqlGuests = "DELETE FROM guests WHERE BookingID = :booking_id";
+            $stmtGuests = $this->db->prepare($sqlGuests);
+            $stmtGuests->bindValue(':booking_id', $bookingId, PDO::PARAM_INT);
+            $stmtGuests->execute();
+            
+            $guestsDeleted = $stmtGuests->rowCount();
+            error_log("🗑️ Deleted {$guestsDeleted} guest(s) for BookingID {$bookingId}");
+
+            // Delete related payments (if any)
+            $sqlPayments = "DELETE FROM payments WHERE BookingID = :booking_id";
+            $stmtPayments = $this->db->prepare($sqlPayments);
+            $stmtPayments->bindValue(':booking_id', $bookingId, PDO::PARAM_INT);
+            $stmtPayments->execute();
+            
+            $paymentsDeleted = $stmtPayments->rowCount();
+            error_log("🗑️ Deleted {$paymentsDeleted} payment(s) for BookingID {$bookingId}");
+
+            // Finally, delete the booking itself (parent record)
+            $sqlBooking = "DELETE FROM bookings WHERE BookingID = :booking_id";
+            $stmtBooking = $this->db->prepare($sqlBooking);
+            $stmtBooking->bindValue(':booking_id', $bookingId, PDO::PARAM_INT);
+            $stmtBooking->execute();
+
+            // Commit transaction
+            $this->db->commit();
+            
+            error_log("✅ Successfully deleted booking {$bookingId} and all related records");
+            return true;
+
+        } catch (PDOException $e) {
+            // Rollback transaction on error
+            $this->db->rollBack();
+            error_log("❌ Failed to delete booking {$bookingId}: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function softDeleteBooking($bookingId)
+    {
+        $cancelledStatusId = $this->getStatusIdByName('cancelled');
+        
+        if (!$cancelledStatusId) {
+            error_log("❌ 'cancelled' status not found in booking_status table");
+            return false;
+        }
+
+        $sql = "UPDATE bookings SET StatusID = :status_id WHERE BookingID = :booking_id";
         $stmt = $this->db->prepare($sql);
+        $stmt->bindValue(':status_id', $cancelledStatusId, PDO::PARAM_INT);
         $stmt->bindValue(':booking_id', $bookingId, PDO::PARAM_INT);
 
-        return $stmt->execute();
+        if ($stmt->execute()) {
+            error_log("✅ Soft deleted (cancelled) booking {$bookingId}");
+            return true;
+        }
+
+        error_log("❌ Failed to soft delete booking {$bookingId}");
+        return false;
     }
 
     /**

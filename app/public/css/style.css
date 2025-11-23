@@ -7,6 +7,10 @@ body {
   color: #333;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 /* Hero Section */
 .hero-section {
   background: linear-gradient(to right, #800020, #d9534f);
@@ -44,27 +48,74 @@ body {
 }
 
 .hero-container a {
-  padding: 12px 25px;
+  display: inline-block; /* Added for better button behavior */
+  padding: 14px 30px; /* Increased padding for better click area */
   margin: 0 10px;
   color: black;
   background-color: white;
-  border: none;
+  border: 2px solid white; /* Made border thicker */
   border-radius: 5px;
   font-size: 1em;
   font-weight: 600;
   text-decoration: none;
   cursor: pointer;
-  transition: background-color 0.3s ease-in-out;
+  transition: all 0.3s ease-in-out; /* Changed to 'all' for smoother transitions */
+}
+
+.hero-container a:hover {
+  background-color: rgba(255, 255, 255, 0.9); /* Slight transparency on hover */
+  transform: translateY(-2px); /* Added lift effect */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Added shadow on hover */
 }
 
 #signup-btn {
   background-color: transparent;
-  border: 1px solid white;
+  border: 2px solid white; /* Made border thicker to match */
   color: white;
 }
 
 #signup-btn:hover {
   background-color: white;
-  color: black;
+  color: #800020; /* Changed to match your brand color instead of black */
+  transform: translateY(-2px); /* Added lift effect */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Added shadow on hover */
 }
 
+/* Responsive adjustments for hero section */
+@media (max-width: 768px) {
+  .hero-container h1 {
+    font-size: 2.5rem;
+  }
+
+  .hero-container p {
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+  }
+
+  .hero-container a {
+    padding: 12px 24px;
+    font-size: 0.95em;
+    margin: 5px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-section {
+    height: 70vh;
+  }
+
+  .hero-container h1 {
+    font-size: 2rem;
+  }
+
+  .hero-container p {
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .hero-container a {
+    display: block; 
+    width: 80%;
+    margin: 10px auto;
+  }
+}

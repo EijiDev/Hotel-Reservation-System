@@ -12,29 +12,28 @@
 
       <div class="footer-column">
         <h3>Quick Links</h3>
-        <ul>
-          <li><a href="/Hotel_Reservation_System/app/public/index.php?controller=home&action=index">Home</a></li>
-          <li><a href="#">Hotels</a></li>
-          <li><a href="#">About Us</a></li>
-          <li><a href="#">Contact</a></li>
-        </ul>
+          <ul>
+            <li><a href="/Hotel_Reservation_System/app/public/index.php?controller=home&action=index">Home</a></li>
+            <li><a href="/Hotel_Reservation_System/app/public/index.php?controller=room&action=availableRooms">Rooms</a></li>
+            <li><a href="/Hotel_Reservation_System/app/public/index.php?controller=home&action=index#contact">Contact</a></li>
+          </ul>
       </div>
 
       <div class="footer-column">
         <h3>Support</h3>
         <ul>
-          <li><a href="#">FAQ</a></li>
-          <li><a href="#">Terms of Service</a></li>
-          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="/Hotel_Reservation_System/app/views/faq.php">FAQ</a></li>
+          <li><a href="/Hotel_Reservation_System/app/views/terms-of-service.php">Terms of Service</a></li>
+          <li><a href="/Hotel_Reservation_System/app/views/privacy-policy.php">Privacy Policy</a></li>
         </ul>
       </div>
 
       <div class="footer-column">
         <h3>Follow Us</h3>
         <div class="social-icons">
-          <a href="https://www.facebook.com/fernando.junio08" target="_blank"><i class="fab fa-facebook"></i></a>
-          <a href="https://x.com/barzaga_r?lang=en" target="_blank"><i class="fab fa-twitter"></i></a>
-          <a href="https://www.instagram.com/diosel_jake?igsh=MTJmcXQ2YmR3YWEwYw==" target="_blank"><i class="fab fa-instagram"></i></a>
+          <a href="https://www.facebook.com/fernando.junio08" target="_blank" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
+          <a href="https://x.com/barzaga_r?lang=en" target="_blank" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+          <a href="https://www.instagram.com/diosel_jake?igsh=MTJmcXQ2YmR3YWEwYw==" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
         </div>
       </div>
 

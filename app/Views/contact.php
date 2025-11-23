@@ -2,7 +2,7 @@
 <link rel="stylesheet" href="css/contact.style.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <!-- Contacts -->
-<section class="contacts">
+<section class="contacts" id="contact">
     <h1>Get in Touch</h1>
     <p>Have questions or special requests? Send us a message, and we'll get back to you as soon as possible.</p>
 

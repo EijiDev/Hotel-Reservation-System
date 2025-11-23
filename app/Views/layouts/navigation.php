@@ -12,11 +12,11 @@
   <ul class="navbar-menu">
     <li><a href="/Hotel_Reservation_System/app/public/index.php?controller=home&action=index" class="nav-link">Home</a></li>
     <li><a href="/Hotel_Reservation_System/app/public/index.php?controller=room&action=availableRooms" class="nav-link">Rooms</a></li>
+    <a href="/Hotel_Reservation_System/app/public/index.php?controller=home&action=index#contact" class="nav-link">Contact</a>
 
     <?php if (isset($_SESSION['user_id'])): ?>
       <li><a href="/Hotel_Reservation_System/app/public/index.php?controller=user&action=userbookings" class="nav-link">My Bookings</a></li>
     <?php endif; ?>
-    <li><a href="#" class="nav-link">Help</a></li>
   </ul>
 
   <div class="navbar-actions">

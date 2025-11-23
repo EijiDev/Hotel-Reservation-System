@@ -259,11 +259,11 @@ table tbody tr:hover {
   display: inline-block;
   padding: 6px 12px;
   border-radius: 2px;
-  background-color: #fff; /* neutral */
+  background-color: #fff; 
   color: #333;
   text-decoration: none;
   font-weight: 600;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); /* strong shadow */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); 
   transition: all 0.2s ease;
 }
 
@@ -272,7 +272,7 @@ table tbody tr:hover {
 }
 
 .pagination a.active {
-  background-color: #ddd; /* neutral active color */
+  background-color: #ddd; 
   color: #000;
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25); /* deeper shadow for active */
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25); 
 }

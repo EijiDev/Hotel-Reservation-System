@@ -10,7 +10,7 @@ body {
 /* Container for bookings — FIXED TO 3 COLUMNS */
 .container {
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* Always 3 cards per row */
+  grid-template-columns: repeat(3, 1fr); 
   gap: 30px;
   max-width: 1300px;
   margin: 20px auto;
@@ -25,6 +25,11 @@ body {
   font-weight: 700;
   margin-bottom: 20px;
   color: #6d0101;
+}
+
+.no-bookings {
+  grid-column: 1 / -1;
+  text-align: center;
 }
 
 .subtitle {
@@ -181,3 +186,4 @@ body {
 .check-info i {
   margin-right: 6px;
 }
+

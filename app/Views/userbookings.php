@@ -26,7 +26,6 @@ if (session_status() === PHP_SESSION_NONE) {
       <?php foreach ($bookings as $booking) : ?>
         <?php if (!empty($booking['BookingID'])) : ?>
           <div class="booking-card">
-            <!-- Updated: room_image is now from rooms table via JOIN -->
             <img src="../public/assets/<?= htmlspecialchars($booking['room_image'] ?? 'default-room.jpg') ?>"
               alt="<?= htmlspecialchars($booking['room_name']) ?>" class="room-image">
 
@@ -90,7 +89,7 @@ if (session_status() === PHP_SESSION_NONE) {
         <?php endif; ?>
       <?php endforeach; ?>
     <?php else : ?>
-        <p style="color:#555; font-size: 18px; text-align: center;">No bookings found.</p>
+        <p class="no-bookings">No bookings found.</p>
     <?php endif; ?>
   </div>
 

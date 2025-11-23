@@ -77,14 +77,8 @@ foreach ($existingBookings as $b) {
             <div class="booking-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <h2><i class="bx bx-edit"></i> Edit Your Booking</h2>
                 <button type="button" class="back-btn" onclick="window.location.href='/Hotel_Reservation_System/app/public/index.php?controller=booking&action=userBookings'">
-                    <i class="bx bx-arrow-back"></i> Back to My Bookings
+                    <i class="bx bx-arrow-back"></i> Back
                 </button>
-            </div>
-
-            <div class="current-booking-info" style="background: #e8f4f8; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-                <h4 style="margin: 0 0 10px 0; color: #2c3e50;">Current Booking Details:</h4>
-                <p style="margin: 5px 0;"><strong>Booking ID:</strong> #<?= $editingBooking['BookingID'] ?></p>
-                <p style="margin: 5px 0;"><strong>Status:</strong> <span style="color: #27ae60; font-weight: bold;"><?= ucfirst($editingBooking['status_name'] ?? 'pending') ?></span></p>
             </div>
 
             <form id="editBookingForm" method="POST" action="/Hotel_Reservation_System/app/public/index.php?controller=booking&action=store">
