@@ -1,7 +1,12 @@
-<link rel="stylesheet" href="../public/css/login.style.css">
-<link rel="icon" href="../public/assets/Lunera-Logo.png" type="image/ico">
-<title>Login</title>
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../public/css/login.style.css">
+    <link rel="icon" href="../public/assets/Lunera-Logo.png" type="image/ico">
+    <title>Login</title>
+</head>
 <body>
     <div class="login-wrapper">
         <!-- LEFT PANEL -->
@@ -46,3 +51,4 @@
         </div>
     </div>
 </body>
+</html>

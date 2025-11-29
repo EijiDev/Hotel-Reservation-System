@@ -164,13 +164,19 @@ if (session_status() === PHP_SESSION_NONE) {
                 <p>We reserve the right to modify these Terms of Service at any time. Changes will be effective immediately upon posting to the Service. Your continued use of the Service after changes constitutes acceptance of the modified terms.</p>
             </section>
 
+
             <section class="policy-section">
-                <h2>12. Governing Law</h2>
-                <p>These Terms of Service are governed by the laws of the Republic of the Philippines. Any disputes arising from these terms or your use of the Service shall be subject to the exclusive jurisdiction of the courts of Baguio City, Philippines.</p>
+                <h2>12. Severability</h2>
+                <p>If any provision of these Terms of Service is found to be invalid or unenforceable, the remaining provisions shall remain in full force and effect.</p>
             </section>
 
             <section class="policy-section">
-                <h2>13. Contact Information</h2>
+                <h2>13. Entire Agreement</h2>
+                <p>These Terms of Service, together with our Privacy Policy, constitute the entire agreement between you and Lunera Hotel and Grill regarding the use of our Service.</p>
+            </section>
+
+            <section class="policy-section">
+                <h2>14. Contact Information</h2>
                 <p>If you have any questions about these Terms of Service, please contact us:</p>
                 <div class="contact-box">
                     <p><strong>Lunera Hotel and Grill</strong></p>
@@ -178,21 +184,12 @@ if (session_status() === PHP_SESSION_NONE) {
                     <p>Phone: +63 912 345 6789</p>
                     <p>Address: Baguio City, Philippines</p>
                 </div>
-            </section>
 
-            <section class="policy-section">
-                <h2>14. Severability</h2>
-                <p>If any provision of these Terms of Service is found to be invalid or unenforceable, the remaining provisions shall remain in full force and effect.</p>
-            </section>
+                <div class="acknowledgment-box">
+                    <p><strong>By using our Service, you acknowledge that you have read, understood, and agree to be bound by these Terms of Service.</strong></p>
+                </div>
 
-            <section class="policy-section">
-                <h2>15. Entire Agreement</h2>
-                <p>These Terms of Service, together with our Privacy Policy, constitute the entire agreement between you and Lunera Hotel and Grill regarding the use of our Service.</p>
             </section>
-
-            <div class="acknowledgment-box">
-                <p><strong>By using our Service, you acknowledge that you have read, understood, and agree to be bound by these Terms of Service.</strong></p>
-            </div>
         </div>
     </div>
 

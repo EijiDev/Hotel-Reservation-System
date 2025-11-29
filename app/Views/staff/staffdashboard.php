@@ -75,26 +75,48 @@ if (session_status() === PHP_SESSION_NONE) session_start();
                     <?php if (!empty($bookings)): ?>
                         <?php foreach ($bookings as $booking): ?>
                             <?php
-                            // booking_status comes from booking_status table via JOIN
+                            // Calculate total
+                            $checkin = $booking['CheckIn'];
+                            $checkout = $booking['CheckOut'];
+                            
+                            $checkinTimestamp = strtotime($checkin);
+                            $checkoutTimestamp = strtotime($checkout);
+                            $nights = (int)ceil(($checkoutTimestamp - $checkinTimestamp) / (60 * 60 * 24));
+                            $nights = max(1, $nights); // Minimum 1 night
+                            
+                            $roomPrice = $booking['room_price'] ?? 0;
+                            $guests = $booking['Guests'] ?? 1;
+                            $checkinTime = $booking['CheckIn_Time'] ?? '14:00';
+                            
+                            // Room total
+                            $roomTotal = $roomPrice * $nights;
+                            
+                            // Guest fee: ₱300 per additional guest (first guest is free)
+                            $guestFee = ($guests > 1) ? ($guests - 1) * 300 : 0;
+                            
+                            // Extra night fee: ₱500 if check-in time is after 6 PM (18:00)
+                            $extraNightFee = 0;
+                            if ($checkinTime) {
+                                list($hours, $minutes) = explode(':', $checkinTime);
+                                $hours = (int)$hours;
+                                if ($hours >= 18) {
+                                    $extraNightFee = 500;
+                                }
+                            }
+                            
+                            $totalAmount = $roomTotal + $guestFee + $extraNightFee;
+                            
                             $bookingStatus = strtolower($booking['booking_status'] ?? 'pending');
                             
-                            // payment_method comes from payments table
                             $paymentMethod = $booking['payment_method'] ?? 'Cash';
                             
-                            // payment_status comes from payments table
                             $paymentStatus = strtolower($booking['payment_status'] ?? 'pending');
                             
-                            // Disable confirm button if already confirmed or cancelled
                             $confirmDisabled = in_array($bookingStatus, ['confirmed', 'cancelled', 'checked-in', 'checked-out']);
-                            
-                            // TotalAmount comes from payments.Amount
-                            $totalAmount = $booking['TotalAmount'] ?? 0;
                             ?>
                             <tr>
                                 <td><?= $booking['BookingID'] ?></td>
-                                <!-- GuestName comes from useraccounts via JOIN -->
                                 <td><?= htmlspecialchars($booking['GuestName'] ?? 'Unknown') ?></td>
-                                <!-- RoomType comes from roomtypes via JOIN -->
                                 <td><?= htmlspecialchars($booking['RoomType'] ?? 'Unknown') ?></td>
                                 <td><?= $booking['CheckIn'] ?? 'N/A' ?></td>
                                 <td><?= $booking['CheckOut'] ?? 'N/A' ?></td>
@@ -111,15 +133,6 @@ if (session_status() === PHP_SESSION_NONE) session_start();
                                         Confirm
                                     </a>
                                     
-                                    <!-- Check-in button (only for confirmed bookings) -->
-                                    <?php if ($bookingStatus === 'confirmed'): ?>
-                                        <a href="/Hotel_Reservation_System/app/public/index.php?controller=staff&action=checkin&id=<?= $booking['BookingID'] ?>"
-                                            style="background: #007bff; color:#fff; padding:6px 12px; border-radius:6px; text-decoration:none; margin-left: 5px;">
-                                            Check-in
-                                        </a>
-                                    <?php endif; ?>
-                                    
-                                    <!-- Check-out button (only for checked-in bookings) -->
                                     <?php if ($bookingStatus === 'checked-in'): ?>
                                         <a href="/Hotel_Reservation_System/app/public/index.php?controller=staff&action=checkout&id=<?= $booking['BookingID'] ?>"
                                             style="background: #6c757d; color:#fff; padding:6px 12px; border-radius:6px; text-decoration:none; margin-left: 5px;">

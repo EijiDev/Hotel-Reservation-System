@@ -6,8 +6,6 @@ use App\Models\Booking;
 use App\Models\Room;
 use App\Models\Payment;
 use App\Models\Guest;
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
 use PDO;
 
 class BookingController
@@ -40,12 +38,10 @@ class BookingController
         }
     }
 
-    // Show booking form (for new bookings only)
+    // Show booking form for new bookings
     public function show($roomId = null)
     {
-        if (!$roomId) {
-            $roomId = $_GET['room_id'] ?? null;
-        }
+        $roomId = $roomId ?? $_GET['room_id'] ?? null;
 
         if (!$roomId) {
             http_response_code(400);
@@ -61,12 +57,10 @@ class BookingController
         include __DIR__ . '/../Views/roombookings.php';
     }
 
-    // Edit booking - routes to editbooking.php
+    // Edit existing booking
     public function edit($bookingId = null)
     {
-        if (!$bookingId) {
-            $bookingId = $_GET['id'] ?? null;
-        }
+        $bookingId = $bookingId ?? $_GET['id'] ?? null;
 
         if (!$bookingId) {
             http_response_code(400);
@@ -82,17 +76,16 @@ class BookingController
         // Ownership check
         if ($editingBooking['UserID'] != $_SESSION['user_id']) {
             $role = $_SESSION['role'] ?? 'user';
-            if ($role !== 'staff' && $role !== 'admin') {
+            if (!in_array($role, ['staff', 'admin'])) {
                 http_response_code(403);
                 exit("Unauthorized access.");
             }
         }
 
-        // Route to editbooking.php
         include __DIR__ . '/../Views/editbooking.php';
     }
 
-    // Store a new booking or update existing one
+    // Store new booking or update existing
     public function store()
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -100,8 +93,8 @@ class BookingController
             exit('Method Not Allowed');
         }
 
-        // Basic input retrieval
-        $bookingId      = isset($_POST['booking_id']) && $_POST['booking_id'] !== '' ? (int)$_POST['booking_id'] : null;
+        // Get form inputs
+        $bookingId      = !empty($_POST['booking_id']) ? (int)$_POST['booking_id'] : null;
         $checkin        = $_POST['checkin'] ?? null;
         $checkout       = $_POST['checkout'] ?? null;
         $guests         = isset($_POST['guests']) ? (int)$_POST['guests'] : 1;
@@ -112,6 +105,7 @@ class BookingController
         $room_id        = isset($_POST['room_id']) ? (int)$_POST['room_id'] : null;
         $user_id        = $_SESSION['user_id'];
 
+        // Validate required fields
         if (!$room_id || !$checkin || !$checkout || !$payment_method) {
             http_response_code(400);
             exit("Missing required fields.");
@@ -123,22 +117,43 @@ class BookingController
             exit("Room not found.");
         }
 
-        // Calculate nights & totals using room_price from room type
-        $nights = max(1, (int)((strtotime($checkout) - strtotime($checkin)) / (60 * 60 * 24)));
+        // Calculate total amount
+        $checkinTimestamp = strtotime($checkin);
+        $checkoutTimestamp = strtotime($checkout);
+        $nights = max(1, (int)ceil(($checkoutTimestamp - $checkinTimestamp) / 86400));
+
         $roomTotal = $room['room_price'] * $nights;
         $guestFee = ($guests > 1) ? ($guests - 1) * 300 : 0;
-        $total = $roomTotal + $guestFee;
 
+        $extraNightFee = 0;
+        if ($checkin_time && (int)explode(':', $checkin_time)[0] >= 18) {
+            $extraNightFee = 500;
+        }
+
+        $total = $roomTotal + $guestFee + $extraNightFee;
+
+        // Debug logging
+        error_log("=== BOOKING CALCULATION ===");
+        error_log("Check-in: {$checkin}, Check-out: {$checkout}");
+        error_log("Nights: {$nights}");
+        error_log("Room Price: {$room['room_price']}");
+        error_log("Room Total: {$roomTotal}");
+        error_log("Guests: {$guests}, Guest Fee: {$guestFee}");
+        error_log("Check-in Time: {$checkin_time}, Extra Night Fee: {$extraNightFee}");
+        error_log("TOTAL: {$total}");
+
+        // UPDATE existing booking
         if ($bookingId) {
-            // UPDATE existing booking
             $existing = $this->bookingModel->getBookingById($bookingId);
             if (!$existing) {
                 http_response_code(404);
                 exit("Booking not found.");
             }
+
+            // Authorization check
             if ($existing['UserID'] != $user_id) {
                 $role = $_SESSION['role'] ?? 'user';
-                if ($role !== 'staff' && $role !== 'admin') {
+                if (!in_array($role, ['staff', 'admin'])) {
                     http_response_code(403);
                     exit("Unauthorized to update this booking.");
                 }
@@ -154,33 +169,12 @@ class BookingController
                 $email
             );
 
-            // Update payment if exists
+            // Update payment amount
             if (isset($existing['PaymentID'])) {
                 $this->paymentModel->update($existing['PaymentID'], [
                     'Method' => $payment_method,
                     'Amount' => $total
                 ]);
-            }
-
-            // Send update email
-            try {
-                $this->sendBookingEmail(
-                    $email,
-                    $contact,
-                    $room['room_name'],
-                    $checkin,
-                    $checkout,
-                    $guests,
-                    $checkin_time,
-                    $payment_method,
-                    'Updated',
-                    $nights,
-                    $roomTotal,
-                    $guestFee,
-                    $total
-                );
-            } catch (\Exception $e) {
-                error_log("Update email error: " . $e->getMessage());
             }
 
             header("Location: /Hotel_Reservation_System/app/public/index.php?controller=booking&action=userBookings&success=updated");
@@ -191,7 +185,7 @@ class BookingController
         try {
             $this->db->beginTransaction();
 
-            // Create booking with pending status
+            // Create booking
             $newBookingId = $this->bookingModel->create(
                 $checkin,
                 $checkout,
@@ -207,7 +201,7 @@ class BookingController
                 throw new \Exception("Failed to create booking");
             }
 
-            // Create payment record
+            // Create payment record with calculated total
             $paymentId = $this->paymentModel->create(
                 $newBookingId,
                 $payment_method,
@@ -219,7 +213,7 @@ class BookingController
                 throw new \Exception("Failed to create payment record");
             }
 
-            // Create guest record (main booker)
+            // Create guest record
             $this->guestModel->create($newBookingId, $contact, $contact, $email);
 
             // Update room status
@@ -227,30 +221,8 @@ class BookingController
 
             $this->db->commit();
 
-            // Send email notification with total amount
-            try {
-                $this->sendBookingEmail(
-                    $email,
-                    $contact,
-                    $room['room_name'],
-                    $checkin,
-                    $checkout,
-                    $guests,
-                    $checkin_time,
-                    $payment_method,
-                    'Pending',
-                    $nights,
-                    $roomTotal,
-                    $guestFee,
-                    $total
-                );
-            } catch (\Exception $e) {
-                error_log("Booking email error: " . $e->getMessage());
-            }
-
             header("Location: /Hotel_Reservation_System/app/public/index.php?controller=booking&action=userBookings&success=booking_created");
             exit();
-
         } catch (\Exception $e) {
             $this->db->rollBack();
             error_log("Booking creation failed: " . $e->getMessage());
@@ -259,179 +231,54 @@ class BookingController
         }
     }
 
-    // Function to send email with total amount
-    private function sendBookingEmail($toEmail, $toName, $roomName, $checkin, $checkout, $guests, $checkin_time, $payment_method, $status, $nights, $roomTotal, $guestFee, $total)
-    {
-        require_once __DIR__ . '/../../vendor/autoload.php';
-
-        $mail = new PHPMailer(true);
-        try {
-            // Server settings
-            $mail->isSMTP();
-            $mail->Host       = 'smtp.gmail.com';
-            $mail->SMTPAuth   = true;
-            $mail->Username   = 'hpl78910@gmail.com';
-            $mail->Password   = 'cknn jsoq vhmm oedl';
-            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-            $mail->Port       = 587;
-
-            // Sender & recipient
-            $mail->setFrom('hpl78910@gmail.com', 'Lunera Hotel');
-            $mail->addAddress($toEmail, $toName);
-
-            // Email content
-            $mail->isHTML(true);
-            $mail->Subject = "Booking {$status} - Lunera Hotel";
-            $mail->Body = "
-                <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f4f4f4;'>
-                    <div style='background-color: #ffffff; padding: 30px; border-radius: 10px;'>
-                        <h2 style='color: #2c3e50; text-align: center;'>Booking {$status}</h2>
-                        
-                        <p style='font-size: 16px; color: #34495e;'>Hi <strong>{$toName}</strong>,</p>
-                        
-                        <p style='font-size: 14px; color: #34495e;'>
-                            Thank you for booking with Lunera Hotel. Your booking is now <strong>{$status}</strong>.
-                        </p>
-                        
-                        <div style='background-color: #ecf0f1; padding: 20px; border-radius: 5px; margin: 20px 0;'>
-                            <h3 style='color: #2c3e50; margin-top: 0;'>Booking Details</h3>
-                            <ul style='list-style: none; padding: 0;'>
-                                <li style='padding: 8px 0; border-bottom: 1px solid #bdc3c7;'>
-                                    <strong>Room:</strong> {$roomName}
-                                </li>
-                                <li style='padding: 8px 0; border-bottom: 1px solid #bdc3c7;'>
-                                    <strong>Check-in:</strong> {$checkin}
-                                </li>
-                                <li style='padding: 8px 0; border-bottom: 1px solid #bdc3c7;'>
-                                    <strong>Check-out:</strong> {$checkout}
-                                </li>
-                                <li style='padding: 8px 0; border-bottom: 1px solid #bdc3c7;'>
-                                    <strong>Number of Nights:</strong> {$nights}
-                                </li>
-                                <li style='padding: 8px 0; border-bottom: 1px solid #bdc3c7;'>
-                                    <strong>Guests:</strong> {$guests}
-                                </li>
-                                <li style='padding: 8px 0; border-bottom: 1px solid #bdc3c7;'>
-                                    <strong>Check-in Time:</strong> {$checkin_time}
-                                </li>
-                                <li style='padding: 8px 0; border-bottom: 1px solid #bdc3c7;'>
-                                    <strong>Payment Method:</strong> {$payment_method}
-                                </li>
-                            </ul>
-                            
-                            <div style='margin-top: 20px; padding-top: 20px; border-top: 2px solid #2c3e50;'>
-                                <h4 style='color: #2c3e50; margin: 10px 0;'>Payment Breakdown</h4>
-                                <ul style='list-style: none; padding: 0;'>
-                                    <li style='padding: 5px 0;'>
-                                        Room Total ({$nights} nights): ₱" . number_format($roomTotal, 2) . "
-                                    </li>
-                                    <li style='padding: 5px 0;'>
-                                        Additional Guest Fee: ₱" . number_format($guestFee, 2) . "
-                                    </li>
-                                </ul>
-                                <p style='font-size: 18px; font-weight: bold; color: #27ae60; margin: 15px 0;'>
-                                    <strong>Total Amount:</strong> ₱" . number_format($total, 2) . "
-                                </p>
-                            </div>
-                        </div>
-                        
-                        <p style='font-size: 14px; color: #34495e;'>
-                            We look forward to welcoming you!
-                        </p>
-                        
-                        <p style='font-size: 12px; color: #7f8c8d; margin-top: 30px;'>
-                            If you have any questions, please contact us.<br>
-                            <strong>Lunera Hotel</strong>
-                        </p>
-                    </div>
-                </div>
-            ";
-
-            $mail->AltBody = "Hi {$toName},\n\n" .
-                "Thank you for booking with Lunera Hotel. Your booking is now {$status}.\n\n" .
-                "Booking Details:\n" .
-                "- Room: {$roomName}\n" .
-                "- Check-in: {$checkin}\n" .
-                "- Check-out: {$checkout}\n" .
-                "- Number of Nights: {$nights}\n" .
-                "- Guests: {$guests}\n" .
-                "- Check-in Time: {$checkin_time}\n" .
-                "- Payment Method: {$payment_method}\n\n" .
-                "Payment Breakdown:\n" .
-                "- Room Total ({$nights} nights): ₱" . number_format($roomTotal, 2) . "\n" .
-                "- Additional Guest Fee: ₱" . number_format($guestFee, 2) . "\n" .
-                "- Total Amount: ₱" . number_format($total, 2) . "\n\n" .
-                "We look forward to welcoming you!\n\n" .
-                "Lunera Hotel";
-
-            $mail->send();
-            error_log("✅ Email sent successfully to: " . $toEmail);
-        } catch (Exception $e) {
-            error_log("❌ Booking email could not be sent. Mailer Error: {$mail->ErrorInfo}");
-        }
-    }
-
     // View user bookings
     public function userBookings()
     {
         if (!isset($_SESSION['user_id'])) {
-            error_log("❌ Session lost! No user_id in session.");
             header("Location: /Hotel_Reservation_System/app/public/index.php?controller=login&action=index&error=session_expired");
             exit;
         }
 
         $userId = $_SESSION['user_id'];
-        $userRole = $_SESSION['role'] ?? 'user';
-
-        error_log("🔍 userBookings called - UserID: {$userId}, Role: {$userRole}");
-
-        // Fetch bookings with payment info
         $bookings = $this->bookingModel->getBookingsByUser($userId);
-
-        error_log("📊 Found bookings: " . count($bookings));
 
         include __DIR__ . '/../Views/userbookings.php';
     }
 
-    // Cancel booking (no email sent)
+    // Cancel booking
     public function cancel($bookingId = null)
     {
-        if (!$bookingId) {
-            $bookingId = $_GET['id'] ?? null;
-        }
+        $bookingId = $bookingId ?? $_GET['id'] ?? null;
+
+        error_log("🔴 CANCEL CALLED - Booking ID: {$bookingId}");
 
         if (!$bookingId) {
-            http_response_code(400);
-            exit("No booking ID provided.");
+            error_log("❌ No booking ID");
+            header("Location: /Hotel_Reservation_System/app/public/index.php?controller=booking&action=userBookings");
+            exit();
         }
 
         $booking = $this->bookingModel->getBookingById($bookingId);
+        error_log("📋 Booking found: " . print_r($booking, true));
+
         if (!$booking) {
-            http_response_code(404);
-            exit("Booking not found.");
+            error_log("❌ Booking not found");
+            header("Location: /Hotel_Reservation_System/app/public/index.php?controller=booking&action=userBookings");
+            exit();
         }
 
-        // Ownership check
-        if ($booking['UserID'] != $_SESSION['user_id']) {
-            $role = $_SESSION['role'] ?? 'user';
-            if ($role !== 'staff' && $role !== 'admin') {
-                http_response_code(403);
-                exit("Unauthorized");
-            }
-        }
+        // Update to cancelled
+        $result = $this->bookingModel->updateStatusByName($bookingId, 'cancelled');
+        error_log("📝 Update result: " . ($result ? "SUCCESS" : "FAILED"));
 
-        // Update booking status to cancelled
-        $this->bookingModel->updateStatusByName($bookingId, 'cancelled');
-        
-        // Update room status back to available
         $this->roomModel->updateAvailability($booking['RoomID'], 'available');
 
-        // Update payment status if exists
         if (isset($booking['PaymentID'])) {
             $this->paymentModel->updateStatus($booking['PaymentID'], 'refunded');
         }
 
-        header("Location: /Hotel_Reservation_System/app/public/index.php?controller=booking&action=userBookings&success=canceled");
+        error_log("✅ Cancel complete, redirecting...");
+        header("Location: /Hotel_Reservation_System/app/public/index.php?controller=booking&action=userBookings");
         exit();
     }
 }

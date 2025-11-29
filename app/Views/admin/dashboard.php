@@ -8,8 +8,16 @@
         <div>
             <h2><i class="fa-solid fa-hotel"></i> Admin Panel</h2>
             <ul>
-                <li class="dashboard-bar"><i class="fa-solid fa-chart-line"></i> Dashboard</li>
-                <li class="dashboard-bar"><i class="fa-solid fa-receipt"></i> History</li>
+                <li class="dashboard-bar" style="background: rgba(255,255,255,0.1);">
+                    <a href="/Hotel_Reservation_System/app/public/index.php?controller=admin&action=index" style="color: #fff; text-decoration: none; display: block;">
+                        <i class="fa-solid fa-chart-line"></i> Dashboard
+                    </a>
+                </li>
+                <li class="dashboard-bar">
+                    <a href="history.php" style="color: #fff; text-decoration: none; display: block;">
+                        <i class="fa-solid fa-receipt"></i> History
+                    </a>
+                </li>
             </ul>
         </div>
         <div class="bottom">
@@ -73,6 +81,42 @@
                     <?php if (!empty($bookings)): ?>
                         <?php foreach ($bookings as $b): ?>
                             <?php
+                            // Calculate total - SAME calculation as userbookings.php
+                            $checkin = $b['CheckIn'];
+                            $checkout = $b['CheckOut'];
+                            
+                            // Use ceil() like JavaScript for nights calculation
+                            $checkinTimestamp = strtotime($checkin);
+                            $checkoutTimestamp = strtotime($checkout);
+                            $nights = (int)ceil(($checkoutTimestamp - $checkinTimestamp) / (60 * 60 * 24));
+                            $nights = max(1, $nights); // Minimum 1 night
+                            
+                            $roomPrice = $b['room_price'] ?? 0;
+                            $guests = $b['Guests'] ?? 1;
+                            $checkinTime = $b['CheckIn_Time'] ?? '14:00';
+                            
+                            // Room total
+                            $roomTotal = $roomPrice * $nights;
+                            
+                            // Guest fee: ₱300 per additional guest (first guest is free)
+                            $guestFee = ($guests > 1) ? ($guests - 1) * 300 : 0;
+                            
+                            // Extra night fee: ₱500 if check-in time is after 6 PM (18:00)
+                            $extraNightFee = 0;
+                            if ($checkinTime) {
+                                list($hours, $minutes) = explode(':', $checkinTime);
+                                $hours = (int)$hours;
+                                if ($hours >= 18) {
+                                    $extraNightFee = 500;
+                                }
+                            }
+                            
+                            // Total = Room + Guest Fee + Extra Night Fee (EXACT same as userbookings.php)
+                            $displayTotal = $roomTotal + $guestFee + $extraNightFee;
+                            
+                            // Note: We calculate fresh instead of using stored Amount 
+                            // because old bookings may have incorrect stored values
+                            
                             // booking_status comes from booking_status table via JOIN
                             $bookingStatus = strtolower($b['booking_status'] ?? 'pending');
                             
@@ -84,14 +128,18 @@
                             
                             // Disable confirm button if already confirmed or cancelled
                             $confirmDisabled = in_array($bookingStatus, ['confirmed', 'cancelled', 'checked-in', 'checked-out']);
-                            
-                            // TotalAmount comes from payments.Amount
-                            $totalAmount = $b['TotalAmount'] ?? 0;
                             ?>
                             <tr>
                                 <td><?= $b['BookingID'] ?></td>
                                 <!-- GuestName comes from useraccounts via JOIN -->
-                                <td><?= htmlspecialchars($b['GuestName'] ?? 'Unknown') ?></td>
+                                <td>
+                                    <?= htmlspecialchars($b['GuestName'] ?? 'Unknown') ?>
+                                    <?php if ($bookingStatus === 'confirmed' || $bookingStatus === 'checked-in'): ?>
+                                        <br><small style="color: #28a745;"><i class="fa fa-user-check"></i> Guest Coming</small>
+                                    <?php elseif ($bookingStatus === 'cancelled'): ?>
+                                        <br><small style="color: #dc3545;"><i class="fa fa-user-times"></i> Cancelled by User</small>
+                                    <?php endif; ?>
+                                </td>
                                 <!-- RoomType comes from roomtypes via JOIN -->
                                 <td><?= htmlspecialchars($b['RoomType'] ?? 'Unknown') ?></td>
                                 <td><?= $b['CheckIn'] ?? 'N/A' ?></td>
@@ -99,7 +147,7 @@
                                 <td><span class="status <?= $bookingStatus ?>"><?= ucfirst($bookingStatus) ?></span></td>
                                 <td><span class="payment <?= $paymentStatus ?>"><?= ucfirst($paymentStatus) ?></span></td>
                                 <td><?= ucfirst($paymentMethod) ?></td>
-                                <td>₱<?= number_format($totalAmount, 2) ?></td>
+                                <td>₱<?= number_format($displayTotal, 2) ?></td>
                                 <td class="actions">
                                     <a href="/Hotel_Reservation_System/app/public/index.php?controller=admin&action=confirm&id=<?= $b['BookingID'] ?>"
                                         class="btn-confirm"
@@ -108,8 +156,8 @@
                                     </a>
                                     <a href="/Hotel_Reservation_System/app/public/index.php?controller=admin&action=delete&id=<?= $b['BookingID'] ?>"
                                         class="btn-delete"
-                                        onclick="return confirm('Are you sure you want to delete this booking?')">
-                                        Delete
+                                        onclick="return confirm('Move this booking to history?')">
+                                        Archive
                                     </a>
                                 </td>
                             </tr>

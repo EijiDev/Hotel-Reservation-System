@@ -1,6 +1,12 @@
-
-<link rel="stylesheet" href="css/contact.style.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact</title>
+    <link rel="stylesheet" href="css/contact.style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
 <!-- Contacts -->
 <section class="contacts" id="contact">
     <h1>Get in Touch</h1>
@@ -27,3 +33,4 @@
         </div>
     </div>
 </section>
+</html>

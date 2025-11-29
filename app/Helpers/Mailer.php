@@ -7,13 +7,55 @@ use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 
 require __DIR__ . '/../../vendor/autoload.php';
+
 class Mailer
 {
+    /**
+     * Send booking confirmation email with calculated totals
+     * 
+     * @param string $toEmail Recipient email
+     * @param string $toName Recipient name
+     * @param array $bookingDetails Booking details array with all necessary fields
+     * @return bool Success status
+     */
     public static function sendBookingConfirmation($toEmail, $toName, $bookingDetails)
     {
         $mail = new PHPMailer(true);
 
         try {
+            // Calculate totals if not already provided
+            $checkin = $bookingDetails['CheckIn'] ?? $bookingDetails['checkin'] ?? '';
+            $checkout = $bookingDetails['CheckOut'] ?? $bookingDetails['checkout'] ?? '';
+            $guests = $bookingDetails['Guests'] ?? $bookingDetails['guests'] ?? 1;
+            $roomPrice = $bookingDetails['room_price'] ?? 0;
+            $checkinTime = $bookingDetails['CheckIn_Time'] ?? $bookingDetails['checkin_time'] ?? '14:00';
+            
+            // Calculate nights
+            $nights = max(1, (int)((strtotime($checkout) - strtotime($checkin)) / (60 * 60 * 24)));
+            
+            // Calculate room total
+            $roomTotal = $roomPrice * $nights;
+            
+            // Calculate guest fee (₱300 per additional guest)
+            $guestFee = ($guests > 1) ? ($guests - 1) * 300 : 0;
+            
+            // Calculate extra night fee (₱500 if check-in after 6 PM)
+            $extraNightFee = 0;
+            if ($checkinTime) {
+                list($hours, $minutes) = explode(':', $checkinTime);
+                $hours = (int)$hours;
+                if ($hours >= 18) {
+                    $extraNightFee = 500;
+                }
+            }
+            
+            // Calculate total
+            $total = $roomTotal + $guestFee + $extraNightFee;
+
+            // Extract other details
+            $roomName = $bookingDetails['room_name'] ?? 'N/A';
+            $paymentMethod = $bookingDetails['payment_method'] ?? 'Cash';
+
             // SMTP settings from .env
             $mail->isSMTP();
             $mail->Host       = $_ENV['MAIL_HOST'];
@@ -27,41 +69,34 @@ class Mailer
             $mail->setFrom($_ENV['MAIL_FROM'], $_ENV['MAIL_FROM_NAME']);
             $mail->addAddress($toEmail, $toName);
 
-            // Email content
-            $mail->isHTML(true);
-            $mail->Subject = 'Booking Confirmation - Lunera Hotel';
-            $mail->Body = "
-                <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>
-                    <h2 style='color: #28a745;'>Booking Confirmation</h2>
-                    <p>Hi <strong>{$toName}</strong>,</p>
-                    <p>Thank you for booking with Lunera Hotel. Your booking has been <strong>confirmed</strong>!</p>
-                    
-                    <div style='background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;'>
-                        <h3 style='margin-top: 0;'>Booking Details</h3>
-                        <ul style='list-style: none; padding: 0;'>
-                            <li><strong>Room:</strong> {$bookingDetails['room_name']}</li>
-                            <li><strong>Check-in:</strong> {$bookingDetails['checkin']}</li>
-                            <li><strong>Check-out:</strong> {$bookingDetails['checkout']}</li>
-                            <li><strong>Guests:</strong> {$bookingDetails['guests']}</li>
-                            <li><strong>Check-in Time:</strong> {$bookingDetails['checkin_time']}</li>
-                            <li><strong>Payment Method:</strong> {$bookingDetails['payment_method']}</li>
-                            <li><strong>Total Amount:</strong> ₱" . number_format($bookingDetails['total'], 2) . "</li>
-                        </ul>
-                    </div>
-                    
-                    <p>We look forward to welcoming you!</p>
-                    <p style='color: #6c757d; font-size: 12px; margin-top: 30px;'>
-                        If you have any questions, please contact us.<br>
-                        Lunera Hotel
-                    </p>
-                </div>
-            ";
-
-            $mail->AltBody = "Hi {$toName},\n\nThank you for booking with Lunera Hotel. Your booking has been confirmed!\nBooking Details:\n- Room: {$bookingDetails['room_name']}\n- Check-in: {$bookingDetails['checkin']}\n- Check-out: {$bookingDetails['checkout']}\n- Guests: {$bookingDetails['guests']}\n- Check-in Time: {$bookingDetails['checkin_time']}\n- Payment Method: {$bookingDetails['payment_method']}\n- Total: ₱" . number_format($bookingDetails['total'], 2);
+            // Simple plain text email
+            $mail->isHTML(false);
+            $mail->Subject = 'Booking Confirmed - Lunera Hotel';
+            $mail->Body = "Hi {$toName},\n\n" .
+                "Great news! Your booking with Lunera Hotel has been CONFIRMED!\n\n" .
+                "BOOKING DETAILS\n:" .
+                "Room: {$roomName}\n" .
+                "Check-in: {$checkin}\n" .
+                "Check-out: {$checkout}\n" .
+                "Number of Nights: {$nights}\n" .
+                "Guests: {$guests}\n" .
+                "Check-in Time: {$checkinTime}\n" .
+                "Payment Method: {$paymentMethod}\n\n" .
+                "PAYMENT BREAKDOWN:\n" .
+                "Room Total ({$nights} nights): ₱" . number_format($roomTotal, 2) . "\n" .
+                "Additional Guest Fee: ₱" . number_format($guestFee, 2) . "\n" .
+                "Extra Night Fee (After 6 PM): ₱" . number_format($extraNightFee, 2) . "\n" .
+                "----------------\n" .
+                "TOTAL AMOUNT: ₱" . number_format($total, 2) . "\n\n" .
+                "We look forward to welcoming you!\n\n" .
+                "If you have any questions, please contact us.\n\n" .
+                "Best regards,\n" .
+                "Lunera Hotel";
 
             $mail->send();
-            error_log("✅ Email sent successfully to: " . $toEmail);
+            error_log("✅ Confirmation email sent successfully to: " . $toEmail);
             return true;
+            
         } catch (Exception $e) {
             error_log("❌ Mailer Error: {$mail->ErrorInfo}");
             return false;

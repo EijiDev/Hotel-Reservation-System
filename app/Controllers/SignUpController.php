@@ -28,9 +28,7 @@ class SignUpController
         include __DIR__ . '/../Views/signup.php';
     }
 
-    /**
-     * Handle user registration with comprehensive validation
-     */
+    //handle user registration with validation
     public function signup($name, $email, $password)
     {
         // Sanitize inputs
@@ -54,13 +52,6 @@ class SignUpController
         // Validate email format
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $this->redirectWithError('invalid_email', 'Please enter a valid email address');
-            return;
-        }
-
-        // Additional email validation
-        $emailValidation = $this->validateEmail($email);
-        if (!$emailValidation['valid']) {
-            $this->redirectWithError('invalid_email', $emailValidation['message']);
             return;
         }
 
@@ -103,9 +94,7 @@ class SignUpController
         }
     }
 
-    /**
-     * Validate name format and length
-     */
+    //validate format and lengths
     private function validateName($name)
     {
         if (strlen($name) < 2) {
@@ -127,36 +116,8 @@ class SignUpController
         return ['valid' => true];
     }
 
-    /**
-     * Validate email format and domain
-     */
-    private function validateEmail($email)
-    {
-        if (strlen($email) > 255) {
-            return ['valid' => false, 'message' => 'Email address is too long'];
-        }
 
-        if (preg_match('/[<>]/', $email)) {
-            return ['valid' => false, 'message' => 'Email contains invalid characters'];
-        }
-
-        $parts = explode('@', $email);
-        if (count($parts) !== 2) {
-            return ['valid' => false, 'message' => 'Invalid email format'];
-        }
-
-        $domain = $parts[1];
-
-        if (strpos($domain, '.') === false) {
-            return ['valid' => false, 'message' => 'Email domain is invalid'];
-        }
-
-        return ['valid' => true];
-    }
-
-    /**
-     * Validate password strength
-     */
+    //Validate password strength
     private function validatePassword($password)
     {
         if (strlen($password) < 8) {

@@ -114,11 +114,7 @@ class StaffController
         error_log("📧 Attempting to send confirmation email for Booking ID: {$bookingId}");
         error_log("📧 Email will be sent to: " . $booking['Email']);
 
-        $emailSent = Mailer::sendBookingConfirmation(
-            $booking['Email'],
-            $booking['user_name'],
-            $booking
-        );
+        $emailSent = Mailer::sendBookingConfirmation($booking['Email'], $booking['user_name'], $booking);
 
         if ($emailSent) {
             error_log("✅ Email sent successfully for Booking ID: {$bookingId}");
@@ -152,41 +148,6 @@ class StaffController
         $this->bookingModel->deleteBooking($id);
 
         header("Location: /Hotel_Reservation_System/app/public/index.php?controller=staff&action=index&success=deleted");
-        exit();
-    }
-
-    // Check-in a booking
-    public function checkin()
-    {
-        $id = intval($_GET['id'] ?? 0);
-        if (!$id) die("Invalid request");
-
-        $booking = $this->bookingModel->getBookingById($id);
-        if (!$booking) die("Booking not found");
-
-        // Update status to checked-in
-        $this->bookingModel->updateStatusByName($id, 'checked-in');
-
-        header("Location: /Hotel_Reservation_System/app/public/index.php?controller=staff&action=index&success=checked_in");
-        exit();
-    }
-
-    // Check-out a booking
-    public function checkout()
-    {
-        $id = intval($_GET['id'] ?? 0);
-        if (!$id) die("Invalid request");
-
-        $booking = $this->bookingModel->getBookingById($id);
-        if (!$booking) die("Booking not found");
-
-        // Update status to checked-out
-        $this->bookingModel->updateStatusByName($id, 'checked-out');
-
-        // Update room back to available
-        $this->roomModel->updateAvailability($booking['RoomID'], 'available');
-
-        header("Location: /Hotel_Reservation_System/app/public/index.php?controller=staff&action=index&success=checked_out");
         exit();
     }
 

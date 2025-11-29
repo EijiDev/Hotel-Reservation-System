@@ -25,6 +25,43 @@ if (session_status() === PHP_SESSION_NONE) {
     <?php if (!empty($bookings)) : ?>
       <?php foreach ($bookings as $booking) : ?>
         <?php if (!empty($booking['BookingID'])) : ?>
+          <?php
+          // Calculate total - SAME calculation as admin/staff dashboard
+          $checkin = $booking['CheckIn'];
+          $checkout = $booking['CheckOut'];
+          
+          // Use ceil() like JavaScript for nights calculation
+          $checkinTimestamp = strtotime($checkin);
+          $checkoutTimestamp = strtotime($checkout);
+          $nights = (int)ceil(($checkoutTimestamp - $checkinTimestamp) / (60 * 60 * 24));
+          $nights = max(1, $nights); // Minimum 1 night
+          
+          $roomPrice = $booking['room_price'] ?? 0;
+          $guests = $booking['Guests'] ?? 1;
+          $checkinTime = $booking['CheckIn_Time'] ?? '14:00';
+          
+          // Room total
+          $roomTotal = $roomPrice * $nights;
+          
+          // Guest fee: ₱300 per additional guest (first guest is free)
+          $guestFee = ($guests > 1) ? ($guests - 1) * 300 : 0;
+          
+          // Extra night fee: ₱500 if check-in time is after 6 PM (18:00)
+          $extraNightFee = 0;
+          if ($checkinTime) {
+            list($hours, $minutes) = explode(':', $checkinTime);
+            $hours = (int)$hours;
+            if ($hours >= 18) {
+              $extraNightFee = 500;
+            }
+          }
+          
+          // Total = Room + Guest Fee + Extra Night Fee (EXACT same as dashboards)
+          $displayTotal = $roomTotal + $guestFee + $extraNightFee;
+          
+          $bookingStatus = strtolower($booking['booking_status']);
+          ?>
+          
           <div class="booking-card">
             <img src="../public/assets/<?= htmlspecialchars($booking['room_image'] ?? 'default-room.jpg') ?>"
               alt="<?= htmlspecialchars($booking['room_name']) ?>" class="room-image">
@@ -65,9 +102,7 @@ if (session_status() === PHP_SESSION_NONE) {
                 <?php if (isset($booking['payment_method']) && $booking['payment_method']) : ?>
                   <p style="font-size: 14px; color: #666; margin-top: 5px;">
                     <i class="fa fa-credit-card"></i> <?= htmlspecialchars($booking['payment_method']) ?>
-                    <?php if (isset($booking['Amount'])) : ?>
-                      - Total: ₱<?= htmlspecialchars(number_format($booking['Amount'], 2)) ?>
-                    <?php endif; ?>
+                    - Total: ₱<?= htmlspecialchars(number_format($displayTotal, 2)) ?>
                   </p>
                 <?php endif; ?>
               </div>
@@ -79,9 +114,23 @@ if (session_status() === PHP_SESSION_NONE) {
                     class="modify-btn">Modify</a>
                 <?php endif; ?>
                 
-                <!-- Show cancel button for pending and confirmed bookings -->
-                <?php if (in_array(strtolower($booking['booking_status']), ['pending', 'confirmed'])) : ?>
+                <!-- FIXED: Only show cancel button for PENDING bookings (not confirmed) -->
+                <?php if (strtolower($booking['booking_status']) === 'pending') : ?>
                   <button class="cancel-btn" data-id="<?= $booking['BookingID'] ?>">Cancel</button>
+                <?php endif; ?>
+                
+                <!-- Show informational message for confirmed bookings -->
+                <?php if (strtolower($booking['booking_status']) === 'confirmed') : ?>
+                  <p style="font-size: 13px; color: #28a745; margin-top: 10px;">
+                    <i class="fa fa-check-circle"></i> Booking confirmed by staff. Contact hotel for changes.
+                  </p>
+                <?php endif; ?>
+                
+                <!-- Show informational message for cancelled bookings -->
+                <?php if (strtolower($booking['booking_status']) === 'cancelled') : ?>
+                  <p style="font-size: 13px; color: #dc3545; margin-top: 10px;">
+                    <i class="fa fa-times-circle"></i> This booking has been cancelled. Contact hotel for inquiries.
+                  </p>
                 <?php endif; ?>
               </div>
             </div>

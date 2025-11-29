@@ -1,37 +1,29 @@
 <?php
 require_once __DIR__ . '/../../vendor/autoload.php';
-
 use App\Config\Database;
 use App\Models\Room;
 use App\Models\Booking;
-
 if (session_status() === PHP_SESSION_NONE) session_start();
 
 $db = (new Database())->connect();
 $roomModel = new Room($db);
 $bookingModel = new Booking($db);
 
-// Must have editingBooking from controller
 if (!isset($editingBooking) || !$editingBooking) {
     die("No booking data found.");
 }
 
-// Get room details
 $roomId = $editingBooking['RoomID'];
 $room = $roomModel->getRoomById($roomId);
 if (!$room) die("Room not found.");
 
-// Price per night from roomtypes table
 $pricePerNight = $room['room_price'] ?? $room['Price'];
 
-// Get existing bookings for date validation (excluding current booking)
 $existingBookings = $bookingModel->getBookingsByRoomId($room['RoomID']);
 $unavailableDates = [];
 
 foreach ($existingBookings as $b) {
-    // Skip current booking being edited
     if ($b['BookingID'] == $editingBooking['BookingID']) continue;
-
     $unavailableDates[] = [
         'checkin' => $b['CheckIn'],
         'checkout' => $b['CheckOut']
@@ -39,19 +31,21 @@ foreach ($existingBookings as $b) {
 }
 ?>
 
-<title>Edit Booking - Lunera Hotel</title>
-<link rel="stylesheet" href="../public/css/roombookings.css">
-<link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<link rel="icon" href="../public/assets/Lunera-Logo.png" type="image/ico">
-
-<body data-price="<?= $pricePerNight ?>"
-      data-unavailable='<?= json_encode($unavailableDates) ?>'>
-    >
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Booking - Lunera Hotel</title>
+    <link rel="stylesheet" href="../public/css/roombookings.css">
+    <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" href="../public/assets/Lunera-Logo.png" type="image/ico">
+</head>
+<body data-price="<?= $pricePerNight ?>" data-unavailable='<?= json_encode($unavailableDates) ?>'>
+    
     <?php include "layouts/navigation.php"; ?>
 
     <div class="container">
-        <!-- ROOM DETAILS -->
         <div class="room-card">
             <img src="../public/assets/<?= htmlspecialchars($room['image'] ?? 'default-room.jpg') ?>" class="room-image">
             <div class="room-details">
@@ -72,7 +66,6 @@ foreach ($existingBookings as $b) {
             </div>
         </div>
 
-        <!-- EDIT BOOKING FORM -->
         <div class="booking-form">
             <div class="booking-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <h2><i class="bx bx-edit"></i> Edit Your Booking</h2>
@@ -90,11 +83,7 @@ foreach ($existingBookings as $b) {
                         <label>Check-in Date</label>
                         <div class="input-group">
                             <i class="bx bx-calendar"></i>
-                            <input type="date"
-                                name="checkin"
-                                required
-                                min="<?= date('Y-m-d') ?>"
-                                value="<?= htmlspecialchars($editingBooking['CheckIn']) ?>">
+                            <input type="date" name="checkin" required min="<?= date('Y-m-d') ?>" value="<?= htmlspecialchars($editingBooking['CheckIn']) ?>">
                         </div>
                     </div>
 
@@ -102,11 +91,7 @@ foreach ($existingBookings as $b) {
                         <label>Check-out Date</label>
                         <div class="input-group">
                             <i class="bx bx-calendar"></i>
-                            <input type="date"
-                                name="checkout"
-                                required
-                                min="<?= date('Y-m-d', strtotime('+1 day')) ?>"
-                                value="<?= htmlspecialchars($editingBooking['CheckOut']) ?>">
+                            <input type="date" name="checkout" required min="<?= date('Y-m-d', strtotime('+1 day')) ?>" value="<?= htmlspecialchars($editingBooking['CheckOut']) ?>">
                         </div>
                     </div>
                 </div>
@@ -116,12 +101,7 @@ foreach ($existingBookings as $b) {
                         <label>Number of Guests</label>
                         <div class="input-group">
                             <i class="bx bx-user"></i>
-                            <input type="number"
-                                name="guests"
-                                min="1"
-                                max="10"
-                                required
-                                value="<?= htmlspecialchars($editingBooking['Guests']) ?>">
+                            <input type="number" name="guests" min="1" max="10" required value="<?= htmlspecialchars($editingBooking['Guests']) ?>">
                         </div>
                     </div>
 
@@ -129,10 +109,7 @@ foreach ($existingBookings as $b) {
                         <label>Check-in Time</label>
                         <div class="input-group">
                             <i class="bx bx-time"></i>
-                            <input type="time"
-                                name="checkin_time"
-                                required
-                                value="<?= htmlspecialchars($editingBooking['CheckIn_Time']) ?>">
+                            <input type="time" name="checkin_time" required value="<?= htmlspecialchars($editingBooking['CheckIn_Time']) ?>">
                         </div>
                     </div>
                 </div>
@@ -142,11 +119,7 @@ foreach ($existingBookings as $b) {
                         <label>Contact Number</label>
                         <div class="input-group">
                             <i class="bx bx-phone"></i>
-                            <input type="text"
-                                name="contact"
-                                required
-                                value="<?= htmlspecialchars($editingBooking['Contact']) ?>"
-                                placeholder="Contact number">
+                            <input type="text" name="contact" required value="<?= htmlspecialchars($editingBooking['Contact']) ?>" placeholder="Contact number">
                         </div>
                     </div>
 
@@ -154,11 +127,7 @@ foreach ($existingBookings as $b) {
                         <label>Email Address</label>
                         <div class="input-group">
                             <i class="bx bx-envelope"></i>
-                            <input type="email"
-                                name="email"
-                                required
-                                value="<?= htmlspecialchars($editingBooking['Email']) ?>"
-                                placeholder="your-email@gmail.com">
+                            <input type="email" name="email" required value="<?= htmlspecialchars($editingBooking['Email']) ?>" placeholder="your-email@gmail.com">
                         </div>
                     </div>
                 </div>
@@ -188,7 +157,6 @@ foreach ($existingBookings as $b) {
         </div>
     </div>
 
-    <!-- CONFIRMATION MODAL -->
     <div id="updateModal" class="modal" style="display:none;">
         <div class="modal-content">
             <h2 class="modal-title"><i class="bx bx-edit"></i> Confirm Booking Update</h2>
@@ -225,3 +193,4 @@ foreach ($existingBookings as $b) {
     </div>
 <script src="../public/js/editbooking.js"></script>
 </body>
+</html>

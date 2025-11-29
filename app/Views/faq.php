@@ -1,11 +1,6 @@
-<?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-?>
+<?php if (session_status() === PHP_SESSION_NONE) {session_start(); }?>
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,19 +10,17 @@ if (session_status() === PHP_SESSION_NONE) {
     <link rel="stylesheet" href="../public/css/footer.style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <body>
     <?php include "layouts/navigation.php"; ?>
-
     <div class="policy-container">
         <div class="policy-header">
             <i class="fas fa-question-circle"></i>
             <h1>Frequently Asked Questions</h1>
             <p>Find answers to common questions about booking and staying at Lunera Hotel and Grill</p>
         </div>
-
         <div class="policy-content">
-            <!-- Booking Questions -->
             <section class="faq-section">
                 <h2><i class="fas fa-calendar-check"></i> Booking & Reservations</h2>
 
@@ -72,7 +65,6 @@ if (session_status() === PHP_SESSION_NONE) {
                 </div>
             </section>
 
-            <!-- Payment Questions -->
             <section class="faq-section">
                 <h2><i class="fas fa-credit-card"></i> Payment & Pricing</h2>
 
@@ -117,7 +109,6 @@ if (session_status() === PHP_SESSION_NONE) {
                 </div>
             </section>
 
-            <!-- Check-in/Check-out Questions -->
             <section class="faq-section">
                 <h2><i class="fas fa-door-open"></i> Check-in & Check-out</h2>
 
@@ -152,7 +143,6 @@ if (session_status() === PHP_SESSION_NONE) {
                 </div>
             </section>
 
-            <!-- Room & Amenities Questions -->
             <section class="faq-section">
                 <h2><i class="fas fa-bed"></i> Rooms & Amenities</h2>
 
@@ -163,12 +153,6 @@ if (session_status() === PHP_SESSION_NONE) {
                     </div>
                     <div class="faq-answer">
                         <p>All rooms include free WiFi, air conditioning, and TV. Amenities vary by room type. Deluxe rooms and suites include additional features such as mini bars, premium toiletries, and enhanced views. Check individual room descriptions for complete amenity lists.</p>
-                    </div>
-                </div>
-
-                <div class="faq-item">
-                    <div class="faq-answer">
-                        <p>Yes, we offer free parking for all guests. Our parking facility is secure and available 24/7.</p>
                     </div>
                 </div>
 
@@ -193,7 +177,6 @@ if (session_status() === PHP_SESSION_NONE) {
                 </div>
             </section>
 
-            <!-- Contact Section -->
             <section class="faq-section">
                 <h2><i class="fas fa-phone"></i> Still Have Questions?</h2>
                 <div class="contact-box">
@@ -225,7 +208,6 @@ if (session_status() === PHP_SESSION_NONE) {
             </section>
         </div>
     </div>
-
     <?php include "layouts/footer.php"; ?>
 </body>
 <script src="../public/js/faqtoggles.js"></script>

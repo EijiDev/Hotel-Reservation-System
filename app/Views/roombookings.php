@@ -11,10 +11,7 @@ $db = (new Database())->connect();
 $roomModel = new Room($db);
 $bookingModel = new Booking($db);
 
-// Editing booking (from controller)
 $editingBooking = $editingBooking ?? null;
-
-// Get room ID from URL or editingBooking
 $roomId = $_GET['room_id'] ?? ($editingBooking['RoomID'] ?? null);
 
 if ($roomId) {
@@ -24,37 +21,24 @@ if ($roomId) {
     die("No room selected.");
 }
 
-// Price per night from roomtypes table
 $pricePerNight = $room['room_price'] ?? $room['Price'];
-
-// Check room availability - Status is now from rooms table
 $isAvailable = (strtolower($room['Status']) === 'available');
 
-// Get existing bookings ONLY for THIS specific room
 $existingBookings = $bookingModel->getBookingsByRoomId($room['RoomID']);
 $unavailableDates = [];
 
 foreach ($existingBookings as $b) {
-    // Skip cancelled bookings
     if (isset($b['booking_status']) && strtolower($b['booking_status']) === 'cancelled') continue;
-
-    // Skip current booking if editing
     if ($editingBooking && $b['BookingID'] == $editingBooking['BookingID']) continue;
 
-    $bCheckIn = $b['CheckIn'];
-    $bCheckOut = $b['CheckOut'];
-
-    // Store unavailable date ranges for validation (only for THIS room)
     $unavailableDates[] = [
-        'checkin' => $bCheckIn,
-        'checkout' => $bCheckOut
+        'checkin' => $b['CheckIn'],
+        'checkout' => $b['CheckOut']
     ];
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -64,17 +48,14 @@ foreach ($existingBookings as $b) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" href="../public/assets/Lunera-Logo.png" type="image/ico">
 </head>
-
 <body>
     <?php include "layouts/navigation.php"; ?>
 
     <div class="container">
-        <!-- ROOM DETAILS -->
         <div class="room-card">
             <img src="../public/assets/<?= htmlspecialchars($room['image'] ?? 'default-room.jpg') ?>" class="room-image">
             <div class="room-details">
                 <h2>
-                    <!-- room_name from roomtypes table -->
                     <?= htmlspecialchars($room['room_name']) ?>
                     <span class="rating"><?= htmlspecialchars($room['rating'] ?? '4.5') ?></span>
                 </h2>
@@ -82,9 +63,7 @@ foreach ($existingBookings as $b) {
                     <i class="bx bx-hash"></i> Room #<?= htmlspecialchars($room['RoomNumber'] ?? $room['RoomID']) ?> &nbsp;&nbsp;
                     <i class="bx bx-building"></i> Floor: <?= htmlspecialchars($room['Floor'] ?? 'N/A') ?>
                 </p>
-                <!-- Description from roomtypes table -->
                 <p class="description"><?= htmlspecialchars($room['Description']) ?></p>
-                <!-- Price from roomtypes table -->
                 <p class="price"><span class="amount">₱<?= number_format($pricePerNight, 2) ?></span> <span class="per-night">/night</span></p>
 
                 <?php if (count($unavailableDates) > 0): ?>
@@ -97,7 +76,6 @@ foreach ($existingBookings as $b) {
             </div>
         </div>
 
-        <!-- BOOKING FORM -->
         <div class="booking-form <?= !$isAvailable && !isset($editingBooking) ? 'disabled-form' : '' ?>">
             <div class="booking-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <h2><?= isset($editingBooking) ? "Edit Your Booking" : "Complete Your Booking" ?></h2>
@@ -127,11 +105,7 @@ foreach ($existingBookings as $b) {
                         <label>Check-in</label>
                         <div class="input-group">
                             <i class="bx bx-calendar"></i>
-                            <input type="date"
-                                name="checkin"
-                                required
-                                min="<?= date('Y-m-d') ?>"
-                                value="<?= $editingBooking['CheckIn'] ?? '' ?>">
+                            <input type="date" name="checkin" required min="<?= date('Y-m-d') ?>" value="<?= $editingBooking['CheckIn'] ?? '' ?>">
                         </div>
                     </div>
 
@@ -139,11 +113,7 @@ foreach ($existingBookings as $b) {
                         <label>Check-out</label>
                         <div class="input-group">
                             <i class="bx bx-calendar"></i>
-                            <input type="date"
-                                name="checkout"
-                                required
-                                min="<?= date('Y-m-d', strtotime('+1 day')) ?>"
-                                value="<?= $editingBooking['CheckOut'] ?? '' ?>">
+                            <input type="date" name="checkout" required min="<?= date('Y-m-d', strtotime('+1 day')) ?>" value="<?= $editingBooking['CheckOut'] ?? '' ?>">
                         </div>
                     </div>
                 </div>
@@ -189,7 +159,6 @@ foreach ($existingBookings as $b) {
                     <i class="bx bx-credit-card"></i>
                     <select name="payment_method" required>
                         <option value="">Select a payment method</option>
-                        <!-- payment_method now comes from payments table -->
                         <option value="Cash" <?= isset($editingBooking) && $editingBooking['payment_method'] === 'Cash' ? 'selected' : '' ?>>Cash</option>
                         <option value="GCash" <?= isset($editingBooking) && $editingBooking['payment_method'] === 'GCash' ? 'selected' : '' ?>>GCash</option>
                     </select>
@@ -202,7 +171,6 @@ foreach ($existingBookings as $b) {
         </div>
     </div>
 
-    <!-- CONFIRMATION MODAL -->
     <div id="modal" class="modal" style="display:none;">
         <div class="modal-content">
             <h2 class="modal-title">Confirm Your Booking</h2>
@@ -240,5 +208,4 @@ foreach ($existingBookings as $b) {
     </div>
     <script src="../public/js/bookingsvalidation.js"></script>
 </body>
-
 </html>

@@ -6,53 +6,6 @@
     <title>Sign Up - Hotel Reservation System</title>
     <link rel="stylesheet" href="../public/css/signup.css">
     <link rel="icon" href="../public/assets/Lunera-Logo.png" type="image/ico">
-    
-    <style>
-        .error-message {
-            background-color: #fee;
-            border: 1px solid #fcc;
-            color: #c33;
-            padding: 12px;
-            border-radius: 6px;
-            margin-bottom: 20px;
-            font-size: 14px;
-        }
-        
-        .field-error {
-            color: #c33;
-            font-size: 13px;
-            margin-top: 5px;
-            display: block;
-        }
-        
-        .form-group.error input {
-            border-color: #c33;
-        }
-        
-        .password-strength {
-            margin-top: 8px;
-            font-size: 13px;
-        }
-        
-        .strength-bar {
-            height: 4px;
-            background: #e0e0e0;
-            border-radius: 2px;
-            margin-top: 5px;
-            overflow: hidden;
-        }
-        
-        .strength-fill {
-            height: 100%;
-            transition: width 0.3s, background 0.3s;
-            width: 0%;
-        }
-        
-        .strength-weak .strength-fill { width: 25%; background: #f44336; }
-        .strength-fair .strength-fill { width: 50%; background: #ff9800; }
-        .strength-good .strength-fill { width: 75%; background: #2196f3; }
-        .strength-strong .strength-fill { width: 100%; background: #4caf50; }
-    </style>
 </head>
 <body>
     <div class="signup-wrapper">

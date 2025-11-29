@@ -1,17 +1,19 @@
 <?php if (session_status() === PHP_SESSION_NONE) session_start(); ?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lunera Hotel and Grill - Rooms</title>
+    <link rel="icon" href="../public/assets/Lunera-Logo.png" type="image/ico">
+    <!-- Main styles that set font -->
+    <link rel="stylesheet" href="/Hotel_Reservation_System/app/public/css/style.css">
+    <!-- Rooms specific styles -->
+    <link rel="stylesheet" href="/Hotel_Reservation_System/app/public/css/rooms.style.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
 <meta charset="UTF-8">
-<title>Lunera Hotel and Grill - Rooms</title>
-<link rel="icon" href="../public/assets/Lunera-Logo.png" type="image/ico">
-
-<!-- Main styles that set font -->
-<link rel="stylesheet" href="/Hotel_Reservation_System/app/public/css/style.css">
-
-<!-- Rooms specific styles -->
-<link rel="stylesheet" href="/Hotel_Reservation_System/app/public/css/rooms.style.css">
-
-<!-- Font Awesome -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
 </head>
 <body>
     <?php include "layouts/navigation.php"; ?>
@@ -25,7 +27,6 @@
             <?php endif; ?>
         </div>
     </section>
-
     <main>
         <?php
         include "rooms.php";
@@ -33,6 +34,6 @@
         include "contact.php";
         ?>
     </main>
-
     <?php include "layouts/footer.php"; ?>
 </body>
+</html>
