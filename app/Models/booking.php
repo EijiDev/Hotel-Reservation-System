@@ -76,7 +76,7 @@ class Booking
             r.RoomNumber,
             r.Floor,
             rt.Name AS room_name,
-            rt.Price,
+            rt.Price AS room_price,
             rt.Description,
             rt.Amenities,
             p.Method AS payment_method,
@@ -101,6 +101,58 @@ class Booking
         $stmt->execute();
 
         return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Get all bookings with optional filtering by deleted status
+     */
+    public function getAllBookings($limit = null, $offset = null, $includeDeleted = false)
+    {
+        $deletedCondition = $includeDeleted ? "WHERE b.IsDeleted = 1" : "WHERE b.IsDeleted = 0";
+
+        $sql = "
+            SELECT 
+                b.BookingID,
+                b.CheckIn,
+                b.CheckOut,
+                b.CheckIn_Time,
+                b.Guests,
+                b.RoomID,
+                b.UserID,
+                b.Created_At,
+                bs.StatusName AS booking_status,
+                u.Name AS GuestName,
+                u.Email,
+                rt.Name AS RoomType,
+                rt.Price AS room_price,
+                r.RoomNumber,
+                p.PaymentID,
+                p.Method AS payment_method,
+                p.Amount AS TotalAmount,
+                p.Status AS payment_status
+            FROM bookings b
+            LEFT JOIN useraccounts u ON b.UserID = u.UserID
+            LEFT JOIN rooms r ON b.RoomID = r.RoomID
+            LEFT JOIN roomtypes rt ON r.TypeID = rt.TypeID
+            LEFT JOIN booking_status bs ON b.StatusID = bs.StatusID
+            LEFT JOIN payments p ON b.BookingID = p.BookingID
+            {$deletedCondition}
+            ORDER BY b.BookingID DESC
+        ";
+
+        if ($limit !== null) {
+            $sql .= " LIMIT :limit OFFSET :offset";
+        }
+
+        $stmt = $this->db->prepare($sql);
+
+        if ($limit !== null) {
+            $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+            $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+        }
+
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     /**
@@ -183,53 +235,40 @@ class Booking
     }
 
     /**
-     * Delete booking and related records
+     * Soft delete booking (set IsDeleted = 1)
      */
     public function deleteBooking($bookingId)
     {
-        try {
-            $this->db->beginTransaction();
-
-            // Delete guests
-            $stmt = $this->db->prepare("DELETE FROM guests WHERE BookingID = :booking_id");
-            $stmt->bindValue(':booking_id', $bookingId, PDO::PARAM_INT);
-            $stmt->execute();
-
-            // Delete payments
-            $stmt = $this->db->prepare("DELETE FROM payments WHERE BookingID = :booking_id");
-            $stmt->bindValue(':booking_id', $bookingId, PDO::PARAM_INT);
-            $stmt->execute();
-
-            // Delete booking
-            $stmt = $this->db->prepare("DELETE FROM bookings WHERE BookingID = :booking_id");
-            $stmt->bindValue(':booking_id', $bookingId, PDO::PARAM_INT);
-            $stmt->execute();
-
-            $this->db->commit();
-            return true;
-        } catch (PDOException $e) {
-            $this->db->rollBack();
-            error_log("Failed to delete booking {$bookingId}: " . $e->getMessage());
-            return false;
-        }
+        $sql = "UPDATE bookings SET IsDeleted = 1, DeletedAt = NOW() WHERE BookingID = :booking_id";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindValue(':booking_id', $bookingId, PDO::PARAM_INT);
+        return $stmt->execute();
     }
 
     /**
-     * Soft delete booking (cancel)
+     * Cancel booking (set status to cancelled)
      */
     public function softDeleteBooking($bookingId)
     {
         $cancelledStatusId = $this->getStatusIdByName('cancelled');
-
-        if (!$cancelledStatusId) {
-            return false;
-        }
+        if (!$cancelledStatusId) return false;
 
         $sql = "UPDATE bookings SET StatusID = :status_id WHERE BookingID = :booking_id";
         $stmt = $this->db->prepare($sql);
         $stmt->bindValue(':status_id', $cancelledStatusId, PDO::PARAM_INT);
         $stmt->bindValue(':booking_id', $bookingId, PDO::PARAM_INT);
 
+        return $stmt->execute();
+    }
+
+    /**
+     * Restore a soft-deleted booking
+     */
+    public function restore($bookingId)
+    {
+        $sql = "UPDATE bookings SET IsDeleted = 0, DeletedAt = NULL WHERE BookingID = :booking_id";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindValue(':booking_id', $bookingId, PDO::PARAM_INT);
         return $stmt->execute();
     }
 
@@ -254,69 +293,9 @@ class Booking
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function restore($bookingId)
-    {
-        $sql = "UPDATE bookings SET IsDeleted = 0, DeletedAt = NULL WHERE BookingID = :booking_id";
-        $stmt = $this->db->prepare($sql);
-        $stmt->bindValue(':booking_id', $bookingId, PDO::PARAM_INT);
-
-        if ($stmt->execute()) {
-            error_log("✅ Restored booking {$bookingId}");
-            return true;
-        }
-
-        error_log("❌ Failed to restore booking {$bookingId}");
-        return false;
-    }
-
-    //get
-    public function getAllBookings($limit = null, $offset = null)
-    {
-        $sql = "
-            SELECT 
-                b.BookingID,
-                b.CheckIn,
-                b.CheckOut,
-                b.CheckIn_Time,
-                b.Guests,
-                b.RoomID,
-                b.UserID,
-                b.Created_At,
-                bs.StatusName AS booking_status,
-                u.Name AS GuestName,
-                u.Email,
-                rt.Name AS RoomType,
-                rt.Price AS room_price,
-                r.RoomNumber,
-                p.PaymentID,
-                p.Method AS payment_method,
-                p.Amount AS TotalAmount,
-                p.Status AS payment_status
-            FROM bookings b
-            LEFT JOIN useraccounts u ON b.UserID = u.UserID
-            LEFT JOIN rooms r ON b.RoomID = r.RoomID
-            LEFT JOIN roomtypes rt ON r.TypeID = rt.TypeID
-            LEFT JOIN booking_status bs ON b.StatusID = bs.StatusID
-            LEFT JOIN payments p ON b.BookingID = p.BookingID
-            ORDER BY b.BookingID DESC
-        ";
-
-        if ($limit !== null) {
-            $sql .= " LIMIT :limit OFFSET :offset";
-        }
-
-        $stmt = $this->db->prepare($sql);
-
-        if ($limit !== null) {
-            $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
-            $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
-        }
-
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    //get status by id
+    /**
+     * Get status ID by name
+     */
     public function getStatusIdByName($statusName)
     {
         $stmt = $this->db->prepare("SELECT StatusID FROM booking_status WHERE StatusName = :status_name LIMIT 1");
@@ -327,7 +306,9 @@ class Booking
         return $result ? $result['StatusID'] : null;
     }
 
-    //Get all booking statuses
+    /**
+     * Get all booking statuses
+     */
     public function getAllStatuses()
     {
         $stmt = $this->db->query("SELECT * FROM booking_status ORDER BY StatusID");

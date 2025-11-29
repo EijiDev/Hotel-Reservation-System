@@ -14,7 +14,7 @@
                     </a>
                 </li>
                 <li class="dashboard-bar">
-                    <a href="history.php" style="color: #fff; text-decoration: none; display: block;">
+                    <a href="/Hotel_Reservation_System/app/public/index.php?controller=admin&action=history" style="color: #fff; text-decoration: none; display: block;">
                         <i class="fa-solid fa-receipt"></i> History
                     </a>
                 </li>
@@ -35,7 +35,6 @@
         <div class="stats">
             <div class="card">
                 <h3>Total Revenue</h3>
-                <!-- total_revenue now comes from payments table -->
                 <p>₱<?= number_format($stats['total_revenue'] ?? 0, 2) ?></p>
                 <small>Based on completed payments</small>
             </div>
@@ -114,9 +113,6 @@
                             // Total = Room + Guest Fee + Extra Night Fee (EXACT same as userbookings.php)
                             $displayTotal = $roomTotal + $guestFee + $extraNightFee;
                             
-                            // Note: We calculate fresh instead of using stored Amount 
-                            // because old bookings may have incorrect stored values
-                            
                             // booking_status comes from booking_status table via JOIN
                             $bookingStatus = strtolower($b['booking_status'] ?? 'pending');
                             
@@ -131,7 +127,6 @@
                             ?>
                             <tr>
                                 <td><?= $b['BookingID'] ?></td>
-                                <!-- GuestName comes from useraccounts via JOIN -->
                                 <td>
                                     <?= htmlspecialchars($b['GuestName'] ?? 'Unknown') ?>
                                     <?php if ($bookingStatus === 'confirmed' || $bookingStatus === 'checked-in'): ?>
@@ -140,7 +135,6 @@
                                         <br><small style="color: #dc3545;"><i class="fa fa-user-times"></i> Cancelled by User</small>
                                     <?php endif; ?>
                                 </td>
-                                <!-- RoomType comes from roomtypes via JOIN -->
                                 <td><?= htmlspecialchars($b['RoomType'] ?? 'Unknown') ?></td>
                                 <td><?= $b['CheckIn'] ?? 'N/A' ?></td>
                                 <td><?= $b['CheckOut'] ?? 'N/A' ?></td>
@@ -173,7 +167,7 @@
             <!-- Pagination -->
             <?php if (($totalPages ?? 1) > 1): ?>
                 <div class="pagination">
-                    <?php for ($i = 1; $i <= ($totalPages ?? 1); $i++): ?>
+                    <?php for ($i = 1; $i <= $totalPages; $i++): ?>
                         <a href="?controller=admin&action=index&page=<?= $i ?>"
                             class="<?= ($i === ($page ?? 1)) ? 'active' : '' ?>">
                             <?= $i ?>

@@ -30,8 +30,11 @@ class Mailer
             $roomPrice = $bookingDetails['room_price'] ?? 0;
             $checkinTime = $bookingDetails['CheckIn_Time'] ?? $bookingDetails['checkin_time'] ?? '14:00';
             
-            // Calculate nights
-            $nights = max(1, (int)((strtotime($checkout) - strtotime($checkin)) / (60 * 60 * 24)));
+            // Calculate nights - using ceil() like dashboard
+            $checkinTimestamp = strtotime($checkin);
+            $checkoutTimestamp = strtotime($checkout);
+            $nights = (int)ceil(($checkoutTimestamp - $checkinTimestamp) / (60 * 60 * 24));
+            $nights = max(1, $nights); // Minimum 1 night
             
             // Calculate room total
             $roomTotal = $roomPrice * $nights;
@@ -74,7 +77,7 @@ class Mailer
             $mail->Subject = 'Booking Confirmed - Lunera Hotel';
             $mail->Body = "Hi {$toName},\n\n" .
                 "Great news! Your booking with Lunera Hotel has been CONFIRMED!\n\n" .
-                "BOOKING DETAILS\n:" .
+                "BOOKING DETAILS:\n" .
                 "Room: {$roomName}\n" .
                 "Check-in: {$checkin}\n" .
                 "Check-out: {$checkout}\n" .

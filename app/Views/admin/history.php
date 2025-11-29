@@ -42,10 +42,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     <!-- Main Content -->
     <div class="main">
         <h1>Booking History</h1>
-        <p style="color: #666; margin-bottom: 20px;">
-            <i class="fa fa-info-circle"></i> Archived and deleted bookings
-        </p>
-
         <!-- Stats -->
         <div class="stats" style="grid-template-columns: repeat(3, 1fr);">
             <div class="card">
@@ -81,7 +77,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                         <th>Status</th>
                         <th>Payment Status</th>
                         <th>Total</th>
-                        <th>Archived Date</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -89,7 +84,33 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                     <?php if (!empty($archivedBookings)): ?>
                         <?php foreach ($archivedBookings as $b): ?>
                             <?php
-                            $displayTotal = $b['TotalAmount'] ?? 0;
+                            // Calculate total 
+                            $checkin = $b['CheckIn'];
+                            $checkout = $b['CheckOut'];
+                            
+                            $checkinTimestamp = strtotime($checkin);
+                            $checkoutTimestamp = strtotime($checkout);
+                            $nights = (int)ceil(($checkoutTimestamp - $checkinTimestamp) / (60 * 60 * 24));
+                            $nights = max(1, $nights);
+                            
+                            $roomPrice = $b['room_price'] ?? 0;
+                            $guests = $b['Guests'] ?? 1;
+                            $checkinTime = $b['CheckIn_Time'] ?? '14:00';
+                            
+                            $roomTotal = $roomPrice * $nights;
+                            $guestFee = ($guests > 1) ? ($guests - 1) * 300 : 0;
+                            
+                            $extraNightFee = 0;
+                            if ($checkinTime) {
+                                list($hours, $minutes) = explode(':', $checkinTime);
+                                $hours = (int)$hours;
+                                if ($hours >= 18) {
+                                    $extraNightFee = 500;
+                                }
+                            }
+                            
+                            $displayTotal = $roomTotal + $guestFee + $extraNightFee;
+                            
                             $bookingStatus = strtolower($b['booking_status'] ?? 'deleted');
                             $paymentStatus = strtolower($b['payment_status'] ?? 'pending');
                             ?>
@@ -109,7 +130,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                                 <td><span class="status <?= $bookingStatus ?>"><?= ucfirst($bookingStatus) ?></span></td>
                                 <td><span class="payment <?= $paymentStatus ?>"><?= ucfirst($paymentStatus) ?></span></td>
                                 <td>₱<?= number_format($displayTotal, 2) ?></td>
-                                <td><?= $b['ArchivedDate'] ?? 'N/A' ?></td>
                                 <td class="actions">
                                     <a href="/Hotel_Reservation_System/app/public/index.php?controller=admin&action=restore&id=<?= $b['BookingID'] ?>"
                                         class="btn-confirm"
@@ -121,16 +141,16 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                         <?php endforeach; ?>
                     <?php else: ?>
                         <tr>
-                            <td colspan="10" style="text-align:center;">No archived bookings found.</td>
+                            <td colspan="9" style="text-align:center;">No archived bookings found.</td>
                         </tr>
                     <?php endif; ?>
                 </tbody>
             </table>
 
             <!-- Pagination -->
-            <?php if (($totalPages ?? 1) > 1): ?>
+            <?php if (isset($totalPages) && $totalPages > 1): ?>
                 <div class="pagination">
-                    <?php for ($i = 1; $i <= ($totalPages ?? 1); $i++): ?>
+                    <?php for ($i = 1; $i <= $totalPages; $i++): ?>
                         <a href="?controller=admin&action=history&page=<?= $i ?>"
                             class="<?= ($i === ($page ?? 1)) ? 'active' : '' ?>">
                             <?= $i ?>
