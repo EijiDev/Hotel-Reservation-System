@@ -28,11 +28,6 @@
                         <i class="fa-solid fa-user-clock"></i> Guest History
                     </a>
                 </li>
-                <li class="dashboard-bar">
-                    <a href="/Hotel_Reservation_System/app/public/index.php?controller=staff&action=history" style="color: #fff; text-decoration: none; display: block;">
-                        <i class="fa-solid fa-receipt"></i> Booking History
-                    </a>
-                </li>
             </ul>
         </div>
         <div class="bottom">
@@ -98,23 +93,23 @@
                             // Calculate total - SAME calculation as userbookings.php
                             $checkin = $b['CheckIn'];
                             $checkout = $b['CheckOut'];
-                            
+
                             // Use ceil() like JavaScript for nights calculation
                             $checkinTimestamp = strtotime($checkin);
                             $checkoutTimestamp = strtotime($checkout);
                             $nights = (int)ceil(($checkoutTimestamp - $checkinTimestamp) / (60 * 60 * 24));
                             $nights = max(1, $nights); // Minimum 1 night
-                            
+
                             $roomPrice = $b['room_price'] ?? 0;
                             $guests = $b['Guests'] ?? 1;
                             $checkinTime = $b['CheckIn_Time'] ?? '14:00';
-                            
+
                             // Room total
                             $roomTotal = $roomPrice * $nights;
-                            
+
                             // Guest fee: ₱300 per additional guest (first guest is free)
                             $guestFee = ($guests > 1) ? ($guests - 1) * 300 : 0;
-                            
+
                             // Extra night fee: ₱500 if check-in time is after 6 PM (18:00)
                             $extraNightFee = 0;
                             if ($checkinTime) {
@@ -124,19 +119,19 @@
                                     $extraNightFee = 500;
                                 }
                             }
-                            
+
                             // Total = Room + Guest Fee + Extra Night Fee (EXACT same as userbookings.php)
                             $displayTotal = $roomTotal + $guestFee + $extraNightFee;
-                            
+
                             // booking_status comes from booking_status table via JOIN
                             $bookingStatus = strtolower($b['booking_status'] ?? 'pending');
-                            
+
                             // payment_method comes from payments table
                             $paymentMethod = $b['payment_method'] ?? 'Cash';
-                            
+
                             // payment_status comes from payments table
                             $paymentStatus = strtolower($b['payment_status'] ?? 'pending');
-                            
+
                             // Disable confirm button if already confirmed or cancelled
                             $confirmDisabled = in_array($bookingStatus, ['confirmed', 'cancelled', 'checked-in', 'checked-out']);
                             ?>
@@ -162,11 +157,6 @@
                                         class="btn-confirm"
                                         <?php if ($confirmDisabled) echo 'style="pointer-events:none; opacity:0.5;"'; ?>>
                                         Confirm
-                                    </a>
-                                    <a href="/Hotel_Reservation_System/app/public/index.php?controller=staff&action=delete&id=<?= $b['BookingID'] ?>"
-                                        class="btn-delete"
-                                        onclick="return confirm('Move this booking to history?')">
-                                        Archive
                                     </a>
                                 </td>
                             </tr>

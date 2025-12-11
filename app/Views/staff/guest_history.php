@@ -39,11 +39,6 @@ if (!isset($_SESSION['user_id']) || !in_array($_SESSION['role'], ['admin', 'staf
                         <i class="fa-solid fa-user-clock"></i> Guest History
                     </a>
                 </li>
-                <li class="dashboard-bar">
-                    <a href="/Hotel_Reservation_System/app/public/index.php?controller=staff&action=history" style="color: #fff; text-decoration: none; display: block;">
-                        <i class="fa-solid fa-receipt"></i> Booking History
-                    </a>
-                </li>
             </ul>
         </div>
         <div class="bottom">
