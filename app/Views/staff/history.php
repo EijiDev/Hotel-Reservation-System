@@ -1,35 +1,47 @@
+<?php
+if (session_status() === PHP_SESSION_NONE) {
+  session_start();
+}
+
+// Authorization check
+if (!isset($_SESSION['user_id']) || !in_array($_SESSION['role'], ['admin', 'staff'])) {
+    header("Location: /Hotel_Reservation_System/app/public/index.php?controller=login&action=index&error=unauthorized");
+    exit;
+}
+?>
+
 <link rel="stylesheet" href="./css/dashboard.style.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="icon" href="../public/assets/Lunera-Logo.png" type="image/ico">
-
+<title>Booking History</title>
 <body>
     <!-- Sidebar -->
     <div class="sidebar">
         <div>
-            <h2><i class="fa-solid fa-hotel"></i> Admin Panel</h2>
+            <h2><i class="fa-solid fa-hotel"></i> Staff Panel</h2>
             <ul>
-                <li class="dashboard-bar" style="background: rgba(255,255,255,0.1);">
-                    <a href="/Hotel_Reservation_System/app/public/index.php?controller=admin&action=index" style="color: #fff; text-decoration: none; display: block;">
+                <li class="dashboard-bar">
+                    <a href="/Hotel_Reservation_System/app/public/index.php?controller=staff&action=index" style="color: #fff; text-decoration: none; display: block;">
                         <i class="fa-solid fa-book"></i> Bookings
                     </a>
                 </li>
                 <li class="dashboard-bar">
-                    <a href="/Hotel_Reservation_System/app/public/index.php?controller=admin&action=reservations" style="color: #fff; text-decoration: none; display: block;">
+                    <a href="/Hotel_Reservation_System/app/public/index.php?controller=staff&action=reservations" style="color: #fff; text-decoration: none; display: block;">
                         <i class="fa-solid fa-calendar-check"></i> Reservations
                     </a>
                 </li>
                 <li class="dashboard-bar">
-                    <a href="/Hotel_Reservation_System/app/public/index.php?controller=admin&action=currentGuests" style="color: #fff; text-decoration: none; display: block;">
+                    <a href="/Hotel_Reservation_System/app/public/index.php?controller=staff&action=currentGuests" style="color: #fff; text-decoration: none; display: block;">
                         <i class="fa-solid fa-users"></i> Current Guests
                     </a>
                 </li>
                 <li class="dashboard-bar">
-                    <a href="/Hotel_Reservation_System/app/public/index.php?controller=admin&action=guestHistory" style="color: #fff; text-decoration: none; display: block;">
+                    <a href="/Hotel_Reservation_System/app/public/index.php?controller=staff&action=guestHistory" style="color: #fff; text-decoration: none; display: block;">
                         <i class="fa-solid fa-user-clock"></i> Guest History
                     </a>
                 </li>
-                <li class="dashboard-bar">
-                    <a href="/Hotel_Reservation_System/app/public/index.php?controller=admin&action=history" style="color: #fff; text-decoration: none; display: block;">
+                <li class="dashboard-bar" style="background: rgba(255,255,255,0.1);">
+                    <a href="/Hotel_Reservation_System/app/public/index.php?controller=staff&action=history" style="color: #fff; text-decoration: none; display: block;">
                         <i class="fa-solid fa-receipt"></i> Booking History
                     </a>
                 </li>
@@ -44,37 +56,31 @@
 
     <!-- Main Content -->
     <div class="main">
-        <h1>Admin Dashboard</h1>
-
+        <h1>Booking History</h1>
+        
         <!-- Stats -->
-        <div class="stats">
+        <div class="stats" style="grid-template-columns: repeat(3, 1fr);">
             <div class="card">
-                <h3>Total Revenue</h3>
-                <p>₱<?= number_format($stats['total_revenue'] ?? 0, 2) ?></p>
-                <small>Based on completed payments</small>
+                <h3>Total Archived</h3>
+                <p><?= $stats['total_archived'] ?? 0 ?></p>
+                <small>All deleted bookings</small>
             </div>
 
             <div class="card">
-                <h3>Total Bookings</h3>
-                <p><?= $stats['total_bookings'] ?? 0 ?></p>
-                <small>All recorded bookings</small>
+                <h3>Cancelled Bookings</h3>
+                <p><?= $stats['cancelled_count'] ?? 0 ?></p>
+                <small>User cancelled</small>
             </div>
 
             <div class="card">
-                <h3>Upcoming Check-ins</h3>
-                <p><?= $stats['upcoming_checkins'] ?? 0 ?></p>
-                <small>Within 7 days</small>
-            </div>
-
-            <div class="card">
-                <h3>Available Rooms</h3>
-                <p><?= $stats['available_rooms'] ?? 0 ?></p>
-                <small>Rooms ready for booking</small>
+                <h3>Completed Bookings</h3>
+                <p><?= $stats['completed_count'] ?? 0 ?></p>
+                <small>Checked out</small>
             </div>
         </div>
 
         <div class="manage-bookings">
-            <h2>Manage Bookings</h2>
+            <h2>Archived Bookings</h2>
 
             <table>
                 <thead>
@@ -86,36 +92,30 @@
                         <th>Check-out</th>
                         <th>Status</th>
                         <th>Payment Status</th>
-                        <th>Payment Method</th>
                         <th>Total</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php if (!empty($bookings)): ?>
-                        <?php foreach ($bookings as $b): ?>
+                    <?php if (!empty($archivedBookings)): ?>
+                        <?php foreach ($archivedBookings as $b): ?>
                             <?php
-                            // Calculate total - SAME calculation as userbookings.php
+                            // Calculate total 
                             $checkin = $b['CheckIn'];
                             $checkout = $b['CheckOut'];
                             
-                            // Use ceil() like JavaScript for nights calculation
                             $checkinTimestamp = strtotime($checkin);
                             $checkoutTimestamp = strtotime($checkout);
                             $nights = (int)ceil(($checkoutTimestamp - $checkinTimestamp) / (60 * 60 * 24));
-                            $nights = max(1, $nights); // Minimum 1 night
+                            $nights = max(1, $nights);
                             
                             $roomPrice = $b['room_price'] ?? 0;
                             $guests = $b['Guests'] ?? 1;
                             $checkinTime = $b['CheckIn_Time'] ?? '14:00';
                             
-                            // Room total
                             $roomTotal = $roomPrice * $nights;
-                            
-                            // Guest fee: ₱300 per additional guest (first guest is free)
                             $guestFee = ($guests > 1) ? ($guests - 1) * 300 : 0;
                             
-                            // Extra night fee: ₱500 if check-in time is after 6 PM (18:00)
                             $extraNightFee = 0;
                             if ($checkinTime) {
                                 list($hours, $minutes) = explode(':', $checkinTime);
@@ -125,29 +125,19 @@
                                 }
                             }
                             
-                            // Total = Room + Guest Fee + Extra Night Fee (EXACT same as userbookings.php)
                             $displayTotal = $roomTotal + $guestFee + $extraNightFee;
                             
-                            // booking_status comes from booking_status table via JOIN
-                            $bookingStatus = strtolower($b['booking_status'] ?? 'pending');
-                            
-                            // payment_method comes from payments table
-                            $paymentMethod = $b['payment_method'] ?? 'Cash';
-                            
-                            // payment_status comes from payments table
+                            $bookingStatus = strtolower($b['booking_status'] ?? 'deleted');
                             $paymentStatus = strtolower($b['payment_status'] ?? 'pending');
-                            
-                            // Disable confirm button if already confirmed or cancelled
-                            $confirmDisabled = in_array($bookingStatus, ['confirmed', 'cancelled', 'checked-in', 'checked-out']);
                             ?>
-                            <tr>
+                            <tr style="opacity: 0.8;">
                                 <td><?= $b['BookingID'] ?></td>
                                 <td>
                                     <?= htmlspecialchars($b['GuestName'] ?? 'Unknown') ?>
-                                    <?php if ($bookingStatus === 'confirmed' || $bookingStatus === 'checked-in'): ?>
-                                        <br><small style="color: #28a745;"><i class="fa fa-user-check"></i> Guest Coming</small>
-                                    <?php elseif ($bookingStatus === 'cancelled'): ?>
-                                        <br><small style="color: #dc3545;"><i class="fa fa-user-times"></i> Cancelled by User</small>
+                                    <?php if ($bookingStatus === 'cancelled'): ?>
+                                        <br><small style="color: #dc3545;"><i class="fa fa-user-times"></i> Cancelled</small>
+                                    <?php elseif ($bookingStatus === 'checked-out'): ?>
+                                        <br><small style="color: #28a745;"><i class="fa fa-check"></i> Completed</small>
                                     <?php endif; ?>
                                 </td>
                                 <td><?= htmlspecialchars($b['RoomType'] ?? 'Unknown') ?></td>
@@ -155,35 +145,29 @@
                                 <td><?= $b['CheckOut'] ?? 'N/A' ?></td>
                                 <td><span class="status <?= $bookingStatus ?>"><?= ucfirst($bookingStatus) ?></span></td>
                                 <td><span class="payment <?= $paymentStatus ?>"><?= ucfirst($paymentStatus) ?></span></td>
-                                <td><?= ucfirst($paymentMethod) ?></td>
                                 <td>₱<?= number_format($displayTotal, 2) ?></td>
                                 <td class="actions">
-                                    <a href="/Hotel_Reservation_System/app/public/index.php?controller=admin&action=confirm&id=<?= $b['BookingID'] ?>"
+                                    <a href="/Hotel_Reservation_System/app/public/index.php?controller=admin&action=restore&id=<?= $b['BookingID'] ?>"
                                         class="btn-confirm"
-                                        <?php if ($confirmDisabled) echo 'style="pointer-events:none; opacity:0.5;"'; ?>>
-                                        Confirm
-                                    </a>
-                                    <a href="/Hotel_Reservation_System/app/public/index.php?controller=admin&action=delete&id=<?= $b['BookingID'] ?>"
-                                        class="btn-delete"
-                                        onclick="return confirm('Move this booking to history?')">
-                                        Archive
+                                        onclick="return confirm('Restore this booking?')">
+                                        Restore
                                     </a>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
                     <?php else: ?>
                         <tr>
-                            <td colspan="10" style="text-align:center;">No bookings found.</td>
+                            <td colspan="9" style="text-align:center;">No archived bookings found.</td>
                         </tr>
                     <?php endif; ?>
                 </tbody>
             </table>
 
             <!-- Pagination -->
-            <?php if (($totalPages ?? 1) > 1): ?>
+            <?php if (isset($totalPages) && $totalPages > 1): ?>
                 <div class="pagination">
                     <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-                        <a href="?controller=admin&action=index&page=<?= $i ?>"
+                        <a href="?controller=admin&action=history&page=<?= $i ?>"
                             class="<?= ($i === ($page ?? 1)) ? 'active' : '' ?>">
                             <?= $i ?>
                         </a>

@@ -53,7 +53,7 @@ if (session_status() === PHP_SESSION_NONE) {
                 <p>All room rates are displayed in Philippine Peso (PHP) and include applicable taxes unless otherwise stated. Rates are subject to change without notice.</p>
 
                 <h3>3.2 Payment Methods</h3>
-                <p>We accept Cash, GCash, and Credit Card payments. Payment is due at check-in unless otherwise arranged.</p>
+                <p>We accept Cash and GCash. Payment is due at check-in unless otherwise arranged.</p>
 
                 <h3>3.3 Additional Charges</h3>
                 <p>Additional guests beyond the standard occupancy will incur an extra fee of ₱300 per person per night. Any damages, missing items, or additional services used during your stay will be charged accordingly.</p>

@@ -10,7 +10,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 }
 ?>
 
-<link rel="stylesheet" href="./css/history.style.css">
+<link rel="stylesheet" href="./css/dashboard.style.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="icon" href="../public/assets/Lunera-Logo.png" type="image/ico">
 
@@ -22,12 +22,27 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
             <ul>
                 <li class="dashboard-bar">
                     <a href="/Hotel_Reservation_System/app/public/index.php?controller=admin&action=index" style="color: #fff; text-decoration: none; display: block;">
-                        <i class="fa-solid fa-chart-line"></i> Dashboard
+                        <i class="fa-solid fa-book"></i> Bookings
+                    </a>
+                </li>
+                <li class="dashboard-bar">
+                    <a href="/Hotel_Reservation_System/app/public/index.php?controller=admin&action=reservations" style="color: #fff; text-decoration: none; display: block;">
+                        <i class="fa-solid fa-calendar-check"></i> Reservations
+                    </a>
+                </li>
+                <li class="dashboard-bar">
+                    <a href="/Hotel_Reservation_System/app/public/index.php?controller=admin&action=currentGuests" style="color: #fff; text-decoration: none; display: block;">
+                        <i class="fa-solid fa-users"></i> Current Guests
+                    </a>
+                </li>
+                <li class="dashboard-bar">
+                    <a href="/Hotel_Reservation_System/app/public/index.php?controller=admin&action=guestHistory" style="color: #fff; text-decoration: none; display: block;">
+                        <i class="fa-solid fa-user-clock"></i> Guest History
                     </a>
                 </li>
                 <li class="dashboard-bar" style="background: rgba(255,255,255,0.1);">
                     <a href="/Hotel_Reservation_System/app/public/index.php?controller=admin&action=history" style="color: #fff; text-decoration: none; display: block;">
-                        <i class="fa-solid fa-receipt"></i> History
+                        <i class="fa-solid fa-receipt"></i> Booking History
                     </a>
                 </li>
             </ul>
@@ -42,6 +57,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     <!-- Main Content -->
     <div class="main">
         <h1>Booking History</h1>
+        
         <!-- Stats -->
         <div class="stats" style="grid-template-columns: repeat(3, 1fr);">
             <div class="card">
@@ -134,7 +150,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                                     <a href="/Hotel_Reservation_System/app/public/index.php?controller=admin&action=restore&id=<?= $b['BookingID'] ?>"
                                         class="btn-confirm"
                                         onclick="return confirm('Restore this booking?')">
-                                        <i class="fa fa-undo"></i> Restore
+                                        Restore
                                     </a>
                                 </td>
                             </tr>
