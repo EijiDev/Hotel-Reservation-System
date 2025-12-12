@@ -39,6 +39,7 @@ foreach ($existingBookings as $b) {
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -48,6 +49,7 @@ foreach ($existingBookings as $b) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" href="../public/assets/Lunera-Logo.png" type="image/ico">
 </head>
+
 <body>
     <?php include "layouts/navigation.php"; ?>
 
@@ -93,6 +95,7 @@ foreach ($existingBookings as $b) {
             <form id="bookingForm"
                 method="POST"
                 action="/Hotel_Reservation_System/app/public/index.php?controller=booking&action=store"
+                enctype="multipart/form-data"
                 data-price-per-night="<?= $pricePerNight ?>"
                 data-room-number="<?= htmlspecialchars($room['RoomNumber'] ?? $room['RoomID']) ?>"
                 data-unavailable-dates='<?= json_encode($unavailableDates) ?>'>
@@ -151,6 +154,35 @@ foreach ($existingBookings as $b) {
                             <i class="bx bx-envelope"></i>
                             <input type="email" name="email" required value="<?= $editingBooking['Email'] ?? '' ?>" placeholder="Gmail">
                         </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div style="flex: 1; min-width: 100%;">
+                        <label>ID Type</label>
+                        <div class="input-group">
+                            <i class="bx bx-id-card"></i>
+                            <select name="id_type" required>
+                                <option value="">Select ID type</option>
+                                <option value="School ID">School ID</option>
+                                <option value="National ID">National ID</option>
+                                <option value="Postal ID">Postal ID</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div style="flex: 1; min-width: 100%;">
+                        <label>Upload ID Image</label>
+                        <label class="id-dropzone">
+                            <i class="bx bx-cloud-upload"></i>
+                            <div class="id-drop-text">
+                                <span class="id-drop-title">Drag & drop your ID here</span>
+                                <span class="id-drop-sub">or click to browse (JPG / PNG)</span>
+                            </div>
+                            <input type="file" name="id_image" accept="image/*" required>
+                        </label>
                     </div>
                 </div>
 

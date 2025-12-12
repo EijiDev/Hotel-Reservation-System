@@ -3,21 +3,27 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// ✅ FIX 1: Authorization check changed to allow both 'admin' and 'staff'
 if (!isset($_SESSION['user_id']) || !in_array($_SESSION['role'], ['admin', 'staff'])) {
     header("Location: /Hotel_Reservation_System/app/public/index.php?controller=login&action=index&error=unauthorized");
     exit;
 }
 ?>
-
-<link rel="stylesheet" href="./css/dashboard.style.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<link rel="icon" href="../public/assets/Lunera-Logo.png" type="image/ico">
-<title>Guest History</title>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <link rel="stylesheet" href="/Hotel_Reservation_System/app/public/css/dashboard.style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" href="/Hotel_Reservation_System/app/public/assets/Lunera-Logo.png" type="image/ico">
+    <title>Guest History</title>
+</head>
 <body>
-        <div class="sidebar">
+    <!-- Sidebar -->
+    <div class="sidebar">
         <div>
-            <h2><i class="fa-solid fa-hotel"></i> Admin Panel</h2>
+            <h2><i class="fa-solid fa-hotel"></i> Staff Panel</h2>
             <ul>
                 <li class="dashboard-bar">
                     <a href="/Hotel_Reservation_System/app/public/index.php?controller=staff&action=index" style="color: #fff; text-decoration: none; display: block;">
@@ -127,3 +133,4 @@ if (!isset($_SESSION['user_id']) || !in_array($_SESSION['role'], ['admin', 'staf
         </div>
     </div>
 </body>
+</html>

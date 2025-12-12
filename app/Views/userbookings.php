@@ -120,12 +120,6 @@ if (session_status() === PHP_SESSION_NONE) {
                   <p style="font-size: 13px; color: #007bff; margin-top: 10px;">
                     <i class="fa fa-smile"></i> Thank you for staying with us!.
                   </p>
-
-                  <a href="/Hotel_Reservation_System/app/public/index.php?controller=home&action=index"
-                    class="modify-btn"
-                    style="display: inline-block; text-decoration: none; margin-top: 8px;">
-                    <i class="fa fa-redo"></i> Book Again
-                  </a>
                 <?php endif; ?>
 
                 <?php if ($bookingStatus === 'cancelled') : ?>

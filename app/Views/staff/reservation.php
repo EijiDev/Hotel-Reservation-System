@@ -97,22 +97,22 @@ if (!isset($_SESSION['user_id']) || !in_array($_SESSION['role'], ['admin', 'staf
                             // ✅ Calculate total - SAME as dashboard.php
                             $checkin = $r['CheckIn'];
                             $checkout = $r['CheckOut'];
-                            
+
                             $checkinTimestamp = strtotime($checkin);
                             $checkoutTimestamp = strtotime($checkout);
                             $nights = (int)ceil(($checkoutTimestamp - $checkinTimestamp) / (60 * 60 * 24));
                             $nights = max(1, $nights);
-                            
+
                             $roomPrice = $r['room_price'] ?? 0;
                             $guests = $r['Guests'] ?? 1;
                             $checkinTime = $r['CheckIn_Time'] ?? '14:00';
-                            
+
                             // Room total
                             $roomTotal = $roomPrice * $nights;
-                            
+
                             // Guest fee: ₱300 per additional guest
                             $guestFee = ($guests > 1) ? ($guests - 1) * 300 : 0;
-                            
+
                             // Extra night fee: ₱500 if check-in after 6 PM
                             $extraNightFee = 0;
                             if ($checkinTime) {
@@ -122,7 +122,7 @@ if (!isset($_SESSION['user_id']) || !in_array($_SESSION['role'], ['admin', 'staf
                                     $extraNightFee = 500;
                                 }
                             }
-                            
+
                             // Total
                             $displayTotal = $roomTotal + $guestFee + $extraNightFee;
                             ?>
@@ -189,7 +189,6 @@ if (!isset($_SESSION['user_id']) || !in_array($_SESSION['role'], ['admin', 'staf
             </div>
             <div class="modal-footer" id="viewModalFooter">
                 <button type="button" onclick="closeModal('viewModal')">Close</button>
-                <!-- Mark as Paid button will be added here dynamically -->
             </div>
         </div>
     </div>

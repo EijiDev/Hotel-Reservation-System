@@ -854,26 +854,28 @@ class StaffController
         $totalHistory = $this->getValue("SELECT COUNT(*) FROM guest_history");
         $totalPages = ceil($totalHistory / $limit);
 
-        // Get guest history
+        // Get guest history with email from useraccounts via bookings
         $query = "
         SELECT 
-            HistoryID,
-            Name,
-            Email,
-            Contact,
-            RoomType,
-            RoomNumber,
-            Street,
-            Barangay,
-            City,
-            Province,
-            PostalCode,
-            CheckedInAt,
-            CheckedOutAt,
-            TotalAmount,
-            PaymentStatus
-        FROM guest_history
-        ORDER BY CheckedOutAt DESC
+            gh.HistoryID,
+            gh.Name,
+            COALESCE(NULLIF(gh.Email, ''), u.Email, 'N/A') AS Email,
+            gh.Contact,
+            gh.RoomType,
+            gh.RoomNumber,
+            gh.Street,
+            gh.Barangay,
+            gh.City,
+            gh.Province,
+            gh.PostalCode,
+            gh.CheckedInAt,
+            gh.CheckedOutAt,
+            gh.TotalAmount,
+            gh.PaymentStatus
+        FROM guest_history gh
+        LEFT JOIN bookings b ON gh.BookingID = b.BookingID
+        LEFT JOIN useraccounts u ON b.UserID = u.UserID
+        ORDER BY gh.CheckedOutAt DESC
         LIMIT ? OFFSET ?
     ";
 
@@ -881,7 +883,7 @@ class StaffController
         $stmt->execute([$limit, $offset]);
         $guestHistory = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        include __DIR__ . '/../Views/staff/guest_history.php';
+        include __DIR__ . '/../Views/admin/guest_history.php';
     }
 
     private function getValue($sql)

@@ -1,35 +1,47 @@
-<link rel="stylesheet" href="./css/dashboard.style.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<link rel="icon" href="../public/assets/Lunera-Logo.png" type="image/ico">
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./css/dashboard.style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" href="../public/assets/Lunera-Logo.png" type="image/ico">
+    <title>Admin Dashboard - Bookings</title>
+</head>
 
 <body>
-    <!-- Sidebar -->
     <div class="sidebar">
         <div>
             <h2><i class="fa-solid fa-hotel"></i> Admin Panel</h2>
             <ul>
                 <li class="dashboard-bar" style="background: rgba(255,255,255,0.1);">
-                    <a href="/Hotel_Reservation_System/app/public/index.php?controller=admin&action=index" style="color: #fff; text-decoration: none; display: block;">
+                    <a href="/Hotel_Reservation_System/app/public/index.php?controller=admin&action=index"
+                        style="color: #fff; text-decoration: none; display: block;">
                         <i class="fa-solid fa-book"></i> Bookings
                     </a>
                 </li>
                 <li class="dashboard-bar">
-                    <a href="/Hotel_Reservation_System/app/public/index.php?controller=admin&action=reservations" style="color: #fff; text-decoration: none; display: block;">
+                    <a href="/Hotel_Reservation_System/app/public/index.php?controller=admin&action=reservations"
+                        style="color: #fff; text-decoration: none; display: block;">
                         <i class="fa-solid fa-calendar-check"></i> Reservations
                     </a>
                 </li>
                 <li class="dashboard-bar">
-                    <a href="/Hotel_Reservation_System/app/public/index.php?controller=admin&action=currentGuests" style="color: #fff; text-decoration: none; display: block;">
+                    <a href="/Hotel_Reservation_System/app/public/index.php?controller=admin&action=currentGuests"
+                        style="color: #fff; text-decoration: none; display: block;">
                         <i class="fa-solid fa-users"></i> Current Guests
                     </a>
                 </li>
                 <li class="dashboard-bar">
-                    <a href="/Hotel_Reservation_System/app/public/index.php?controller=admin&action=guestHistory" style="color: #fff; text-decoration: none; display: block;">
+                    <a href="/Hotel_Reservation_System/app/public/index.php?controller=admin&action=guestHistory"
+                        style="color: #fff; text-decoration: none; display: block;">
                         <i class="fa-solid fa-user-clock"></i> Guest History
                     </a>
                 </li>
                 <li class="dashboard-bar">
-                    <a href="/Hotel_Reservation_System/app/public/index.php?controller=admin&action=history" style="color: #fff; text-decoration: none; display: block;">
+                    <a href="/Hotel_Reservation_System/app/public/index.php?controller=admin&action=history"
+                        style="color: #fff; text-decoration: none; display: block;">
                         <i class="fa-solid fa-receipt"></i> Booking History
                     </a>
                 </li>
@@ -42,11 +54,9 @@
         </div>
     </div>
 
-    <!-- Main Content -->
     <div class="main">
         <h1>Admin Dashboard</h1>
 
-        <!-- Stats -->
         <div class="stats">
             <div class="card">
                 <h3>Total Revenue</h3>
@@ -73,16 +83,104 @@
             </div>
         </div>
 
-        <div class="manage-bookings">
-            <h2>Manage Bookings</h2>
+        <div class="filters-section">
+            <form method="GET" action="/Hotel_Reservation_System/app/public/index.php" id="filterForm">
+                <input type="hidden" name="controller" value="admin">
+                <input type="hidden" name="action" value="index">
 
-            <table>
+                <div class="filters-row">
+                    <div class="filter-group search-box">
+                        <label for="search">Search</label>
+                        <i class="fa-solid fa-search"></i>
+                        <input type="text" id="search" name="search" placeholder="Guest name or ID..."
+                            value="<?= htmlspecialchars($_GET['search'] ?? '') ?>">
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="booking_status">Status</label>
+                        <select id="booking_status" name="booking_status">
+                            <option value="">All Status</option>
+                            <option value="pending"
+                                <?= ($_GET['booking_status'] ?? '') === 'pending' ? 'selected' : '' ?>>Pending</option>
+                            <option value="confirmed"
+                                <?= ($_GET['booking_status'] ?? '') === 'confirmed' ? 'selected' : '' ?>>Confirmed
+                            </option>
+                            <option value="checked-in"
+                                <?= ($_GET['booking_status'] ?? '') === 'checked-in' ? 'selected' : '' ?>>Checked-in
+                            </option>
+                            <option value="checked-out"
+                                <?= ($_GET['booking_status'] ?? '') === 'checked-out' ? 'selected' : '' ?>>Checked-out
+                            </option>
+                            <option value="cancelled"
+                                <?= ($_GET['booking_status'] ?? '') === 'cancelled' ? 'selected' : '' ?>>Cancelled
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="payment_status">Payment</label>
+                        <select id="payment_status" name="payment_status">
+                            <option value="">All Payments</option>
+                            <option value="pending"
+                                <?= ($_GET['payment_status'] ?? '') === 'pending' ? 'selected' : '' ?>>Pending</option>
+                            <option value="completed"
+                                <?= ($_GET['payment_status'] ?? '') === 'completed' ? 'selected' : '' ?>>Completed
+                            </option>
+                            <option value="failed"
+                                <?= ($_GET['payment_status'] ?? '') === 'failed' ? 'selected' : '' ?>>Failed</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="sort_by">Sort By</label>
+                        <select id="sort_by" name="sort_by">
+                            <option value="checkin_desc"
+                                <?= ($_GET['sort_by'] ?? 'checkin_desc') === 'checkin_desc' ? 'selected' : '' ?>>
+                                Check-in (Newest)</option>
+                            <option value="checkin_asc"
+                                <?= ($_GET['sort_by'] ?? '') === 'checkin_asc' ? 'selected' : '' ?>>Check-in (Oldest)
+                            </option>
+                            <option value="total_desc"
+                                <?= ($_GET['sort_by'] ?? '') === 'total_desc' ? 'selected' : '' ?>>Total (Highest)
+                            </option>
+                            <option value="total_asc"
+                                <?= ($_GET['sort_by'] ?? '') === 'total_asc' ? 'selected' : '' ?>>Total (Lowest)
+                            </option>
+                            <option value="guest_name"
+                                <?= ($_GET['sort_by'] ?? '') === 'guest_name' ? 'selected' : '' ?>>Guest Name (A-Z)
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="filter-actions">
+                        <a href="/Hotel_Reservation_System/app/public/index.php?controller=admin&action=index"
+                            class="btn-reset">
+                            <i class="fa-solid fa-rotate-right"></i> Reset
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="manage-bookings">
+            <div class="results-info">
+                <div class="results-count">
+                    <i class="fa-solid fa-list"></i>
+                    Showing <?= count($bookings ?? []) ?> booking(s)
+                    <?php if (!empty($_GET['search']) || !empty($_GET['booking_status']) || !empty($_GET['payment_status'])): ?>
+                        (Filtered)
+                    <?php endif; ?>
+                </div>
+            </div>
+
+            <table id="bookingsTable">
                 <thead>
                     <tr>
                         <th>ID</th>
                         <th>Guest</th>
                         <th>Room Type</th>
                         <th>Check-in</th>
+                        <th>Check-in Time</th>
                         <th>Check-out</th>
                         <th>Status</th>
                         <th>Payment Status</th>
@@ -95,50 +193,46 @@
                     <?php if (!empty($bookings)): ?>
                         <?php foreach ($bookings as $b): ?>
                             <?php
-                            // Calculate total - SAME calculation as userbookings.php
+                            // Calculate total
                             $checkin = $b['CheckIn'];
                             $checkout = $b['CheckOut'];
-                            
+
                             // Use ceil() like JavaScript for nights calculation
                             $checkinTimestamp = strtotime($checkin);
                             $checkoutTimestamp = strtotime($checkout);
                             $nights = (int)ceil(($checkoutTimestamp - $checkinTimestamp) / (60 * 60 * 24));
                             $nights = max(1, $nights); // Minimum 1 night
-                            
+
                             $roomPrice = $b['room_price'] ?? 0;
                             $guests = $b['Guests'] ?? 1;
                             $checkinTime = $b['CheckIn_Time'] ?? '14:00';
-                            
+
                             // Room total
                             $roomTotal = $roomPrice * $nights;
-                            
+
                             // Guest fee: ₱300 per additional guest (first guest is free)
                             $guestFee = ($guests > 1) ? ($guests - 1) * 300 : 0;
-                            
-                            // Extra night fee: ₱500 if check-in time is after 6 PM (18:00)
-                            $extraNightFee = 0;
-                            if ($checkinTime) {
-                                list($hours, $minutes) = explode(':', $checkinTime);
-                                $hours = (int)$hours;
-                                if ($hours >= 18) {
-                                    $extraNightFee = 500;
-                                }
-                            }
-                            
-                            // Total = Room + Guest Fee + Extra Night Fee (EXACT same as userbookings.php)
+
+                            // --- REMOVED EXTRA NIGHT FEE LOGIC ---
+                            $extraNightFee = 0; // Set permanently to 0
+
+                            // Total = Room + Guest Fee (Simplified)
                             $displayTotal = $roomTotal + $guestFee + $extraNightFee;
-                            
+
                             // booking_status comes from booking_status table via JOIN
                             $bookingStatus = strtolower($b['booking_status'] ?? 'pending');
-                            
+
                             // payment_method comes from payments table
                             $paymentMethod = $b['payment_method'] ?? 'Cash';
-                            
+
                             // payment_status comes from payments table
                             $paymentStatus = strtolower($b['payment_status'] ?? 'pending');
-                            
+
                             // Disable confirm button if already confirmed or cancelled
                             $confirmDisabled = in_array($bookingStatus, ['confirmed', 'cancelled', 'checked-in', 'checked-out']);
+
+                            // Format check-in time to 12-hour format with AM/PM
+                            $formattedTime = date('g:i A', strtotime($checkinTime));
                             ?>
                             <tr>
                                 <td><?= $b['BookingID'] ?></td>
@@ -151,8 +245,11 @@
                                     <?php endif; ?>
                                 </td>
                                 <td><?= htmlspecialchars($b['RoomType'] ?? 'Unknown') ?></td>
-                                <td><?= $b['CheckIn'] ?? 'N/A' ?></td>
-                                <td><?= $b['CheckOut'] ?? 'N/A' ?></td>
+                                <td><?= date('M d, Y', strtotime($b['CheckIn'])) ?></td>
+                                <td>
+                                    <strong><?= $formattedTime ?></strong>
+                                </td>
+                                <td><?= date('M d, Y', strtotime($b['CheckOut'])) ?></td>
                                 <td><span class="status <?= $bookingStatus ?>"><?= ucfirst($bookingStatus) ?></span></td>
                                 <td><span class="payment <?= $paymentStatus ?>"><?= ucfirst($paymentStatus) ?></span></td>
                                 <td><?= ucfirst($paymentMethod) ?></td>
@@ -164,8 +261,7 @@
                                         Confirm
                                     </a>
                                     <a href="/Hotel_Reservation_System/app/public/index.php?controller=admin&action=delete&id=<?= $b['BookingID'] ?>"
-                                        class="btn-delete"
-                                        onclick="return confirm('Move this booking to history?')">
+                                        class="btn-delete" onclick="return confirm('Move this booking to history?')">
                                         Archive
                                     </a>
                                 </td>
@@ -173,18 +269,22 @@
                         <?php endforeach; ?>
                     <?php else: ?>
                         <tr>
-                            <td colspan="10" style="text-align:center;">No bookings found.</td>
+                            <td colspan="11" style="text-align:center;">No bookings found.</td>
                         </tr>
                     <?php endif; ?>
                 </tbody>
             </table>
 
-            <!-- Pagination -->
             <?php if (($totalPages ?? 1) > 1): ?>
                 <div class="pagination">
+                    <?php
+                    // Preserve filter parameters in pagination
+                    $queryParams = $_GET;
+                    unset($queryParams['page']);
+                    $queryString = http_build_query($queryParams);
+                    ?>
                     <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-                        <a href="?controller=admin&action=index&page=<?= $i ?>"
-                            class="<?= ($i === ($page ?? 1)) ? 'active' : '' ?>">
+                        <a href="?<?= $queryString ?>&page=<?= $i ?>" class="<?= ($i === ($page ?? 1)) ? 'active' : '' ?>">
                             <?= $i ?>
                         </a>
                     <?php endfor; ?>
@@ -192,4 +292,7 @@
             <?php endif; ?>
         </div>
     </div>
+    <script src="../public/js/dashboardFiltering.js"></script>
 </body>
+
+</html>

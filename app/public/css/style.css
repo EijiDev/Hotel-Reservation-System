@@ -76,7 +76,7 @@ html {
 
 #signup-btn:hover {
   background-color: white;
-  color: #800020; /* Changed to match your brand color instead of black */
+  color: #000000; /* Changed to match your brand color instead of black */
   transform: translateY(-2px); /* Added lift effect */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Added shadow on hover */
 }

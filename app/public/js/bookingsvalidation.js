@@ -37,10 +37,13 @@ if (form) {
     const checkin = form.checkin.value;
     const checkout = form.checkout.value;
     const guests = parseInt(form.guests.value);
-    const contact = form.contact.value;
-    const email = form.email.value;
+    const contact = form.contact.value.trim();
+    const email = form.email.value.trim();
     const paymentMethod = form.payment_method.value;
     const checkinTime = form.checkin_time.value;
+    const idType = form.id_type ? form.id_type.value : "";
+    const idFileInput = form.id_image;
+    const idFile = idFileInput && idFileInput.files[0];
 
     // Validation
     if (
@@ -52,6 +55,50 @@ if (form) {
       !paymentMethod
     ) {
       alert("Please fill in all required fields.");
+      return;
+    }
+
+      // NEW: validate ID image extension and size (e.g., max 3 MB)
+    const allowedExtensions = ["jpg", "jpeg", "png", "webp"];
+    const maxSizeMB = 3;
+    const fileName = idFile.name.toLowerCase();
+    const fileSizeMB = idFile.size / (1024 * 1024);
+    const ext = fileName.split(".").pop();
+
+    if (!allowedExtensions.includes(ext)) {
+      alert("Please upload a valid ID image (JPG, JPEG, PNG, or WEBP).");
+      idFileInput.value = "";
+      idFileInput.focus();
+      return;
+    }
+
+    if (fileSizeMB > maxSizeMB) {
+      alert("ID image must be smaller than 3 MB.");
+      idFileInput.value = "";
+      idFileInput.focus();
+      return;
+    }
+
+    // OPTIONAL: show file name in the drag area
+    const idDropTitle = document.querySelector(".id-drop-title");
+    if (idDropTitle) {
+      idDropTitle.textContent = idFile.name;
+    }
+
+    // OPTIONAL: “match” ID type rule (example only)
+    // here you just ensure something is selected;
+    // real matching of content to ID type must be done on the server or manually
+    if (!["School ID", "National ID", "Postal ID"].includes(idType)) {
+      alert("Please select a valid ID type.");
+      form.id_type.focus();
+      return;
+    }
+
+
+    // Guest limit validation (max 5 guests)
+    if (guests < 1 || guests > 5) {
+      alert("Number of guests must be between 1 and 5.");
+      form.guests.focus();
       return;
     }
 
@@ -81,17 +128,32 @@ if (form) {
       return;
     }
 
-    // Contact validation
-    const phoneRegex = /^[0-9]{10,11}$/;
-    if (!phoneRegex.test(contact.replace(/[\s\-]/g, ""))) {
-      alert("Please enter a valid contact number (10-11 digits).");
+    // Enhanced Contact validation (Philippine phone numbers + international)
+    const cleanContact = contact.replace(/[\s\-\+\(\)]/g, "");
+    let isValidContact = false;
+
+    // Philippine mobile numbers (09xx-xxx-xxxx or +639xx-xxx-xxxx)
+    const phMobileRegex = /^639\d{9}$|^09\d{9}$/;
+    // Philippine landline (02-xxx-xxxx or +632-xxx-xxxx)
+    const phLandlineRegex = /^632\d{7,8}$|^02\d{7,8}$/;
+    // International numbers (starting with + followed by country code)
+    const intlRegex = /^\+\d{1,4}\d{7,12}$/;
+
+    if (phMobileRegex.test(cleanContact) || phLandlineRegex.test(cleanContact) || intlRegex.test(contact)) {
+      isValidContact = true;
+    }
+
+    if (!isValidContact) {
+      alert("Please enter a valid phone number.\n• Philippine mobile: 09xxxxxxxxx or +639xxxxxxxxx");
+      form.contact.focus();
       return;
     }
 
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    // Enhanced Email validation
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (!emailRegex.test(email)) {
-      alert("Please enter a valid email address.");
+      alert("Please enter a valid email address (e.g., example@gmail.com).");
+      form.email.focus();
       return;
     }
 
@@ -183,7 +245,7 @@ window.onclick = (e) => {
   }
 };
 
-// Real-time checkout date validation
+// Real-time checkout date validation AND guest limit
 if (form.checkin) {
   form.checkin.addEventListener("change", function () {
     const checkinDate = new Date(this.value);
@@ -195,6 +257,19 @@ if (form.checkin) {
     // Reset checkout if it's before new minimum
     if (form.checkout.value && new Date(form.checkout.value) <= checkinDate) {
       form.checkout.value = "";
+    }
+  });
+}
+
+// Real-time guest limit validation
+if (form.guests) {
+  form.guests.addEventListener("input", function () {
+    const guests = parseInt(this.value);
+    if (guests > 5) {
+      this.value = 5;
+      alert("Maximum 5 guests only allowed");
+    } else if (guests < 1) {
+      this.value = 1;
     }
   });
 }

@@ -148,26 +148,37 @@ class AdminController
             error_log("Updating room status to booked");
             $this->roomModel->updateAvailability($booking['RoomID'], 'booked');
 
-            // Update payment status if exists (but keep cash payments as pending)
-            if (isset($booking['PaymentID'])) {
-                $paymentMethodQuery = "SELECT Method FROM payments WHERE PaymentID = ?";
-                $stmt = $this->db->prepare($paymentMethodQuery);
-                $stmt->execute([$booking['PaymentID']]);
-                $paymentData = $stmt->fetch(PDO::FETCH_ASSOC);
+            // ✅ FIXED: Update payment status based on payment method
+            $paymentMethodQuery = "
+            SELECT PaymentID, Method, Status 
+            FROM payments 
+            WHERE BookingID = ? 
+            ORDER BY DatePaid DESC 
+            LIMIT 1
+        ";
+            $stmt = $this->db->prepare($paymentMethodQuery);
+            $stmt->execute([$id]);
+            $paymentData = $stmt->fetch(PDO::FETCH_ASSOC);
 
-                if ($paymentData) {
-                    $paymentMethod = strtolower(trim($paymentData['Method']));
+            if ($paymentData) {
+                $paymentMethod = strtolower(trim($paymentData['Method']));
+                $paymentId = $paymentData['PaymentID'];
 
-                    if ($paymentMethod === 'cash') {
-                        error_log("💵 Payment is Cash - keeping status as PENDING");
-                    } else {
-                        $this->paymentModel->updateStatus($booking['PaymentID'], 'completed');
-                        error_log("✅ Payment status updated to COMPLETED (Method: {$paymentData['Method']})");
-                    }
+                if ($paymentMethod === 'cash') {
+                    // Cash payments stay PENDING when confirmed
+                    $this->paymentModel->updateStatus($paymentId, 'pending');
+                    error_log("💵 Cash payment - set to PENDING for Booking #{$id}");
+                } else {
+                    // GCash/Online payments set to COMPLETED when confirmed
+                    $this->paymentModel->updateStatus($paymentId, 'completed');
+                    error_log("✅ GCash payment completed for Booking #{$id} (PaymentID: {$paymentId})");
                 }
+            } else {
+                error_log("⚠️ No payment record found for Booking #{$id}");
             }
+
             $this->db->commit();
-            error_log("✅ Transaction committed - Booking confirmed WITHOUT guest entry");
+            error_log("✅ Transaction committed - Booking confirmed");
 
             // Prepare booking details for email
             $bookingDetails = [
@@ -302,12 +313,37 @@ class AdminController
         $totalArchived = $this->getValue("SELECT COUNT(*) FROM bookings WHERE IsDeleted = 1");
         $totalPages = ceil($totalArchived / $limit);
 
-        // Get archived bookings
-        $archivedBookings = $this->bookingModel->getAllBookings($limit, $offset, true);
+        // ✅ UPDATED: Get archived bookings WITH payment method
+        $query = "
+        SELECT 
+            b.BookingID,
+            b.CheckIn,
+            b.CheckOut,
+            b.Guests,
+            b.CheckIn_Time,
+            u.Name AS GuestName,
+            rt.Name AS RoomType,
+            rt.Price AS room_price,
+            bs.StatusName AS booking_status,
+            p.Status AS payment_status,
+            p.Method AS payment_method
+        FROM bookings b
+        LEFT JOIN useraccounts u ON b.UserID = u.UserID
+        LEFT JOIN rooms r ON b.RoomID = r.RoomID
+        LEFT JOIN roomtypes rt ON r.TypeID = rt.TypeID
+        LEFT JOIN booking_status bs ON b.StatusID = bs.StatusID
+        LEFT JOIN payments p ON b.BookingID = p.BookingID
+        WHERE b.IsDeleted = 1
+        ORDER BY b.Created_At DESC
+        LIMIT ? OFFSET ?
+    ";
+
+        $stmt = $this->db->prepare($query);
+        $stmt->execute([$limit, $offset]);
+        $archivedBookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         include __DIR__ . '/../Views/admin/history.php';
     }
-
 
     public function reservations()
     {
@@ -646,7 +682,6 @@ class AdminController
             exit();
         }
     }
-
     // Current Guests page
     public function currentGuests()
     {
@@ -671,14 +706,14 @@ class AdminController
         $totalGuests = $this->getValue("SELECT COUNT(*) FROM guests WHERE BookingID IS NOT NULL");
         $totalPages = ceil($totalGuests / $limit);
 
-        // Get current guests with booking details
+        // Get current guests with booking details - Contact from bookings or guests, Email from useraccounts
         $query = "
         SELECT 
             g.GuestID,
             g.BookingID,
             g.Name AS GuestName,
-            g.Contact,
-            g.Email,
+            COALESCE(NULLIF(b.Contact, ''), g.Contact, 'N/A') AS Contact,
+            u.Email,
             b.CheckIn,
             b.CheckOut,
             b.RoomID,
@@ -686,9 +721,10 @@ class AdminController
             r.RoomNumber
         FROM guests g
         LEFT JOIN bookings b ON g.BookingID = b.BookingID
+        LEFT JOIN useraccounts u ON b.UserID = u.UserID
         LEFT JOIN rooms r ON b.RoomID = r.RoomID
         LEFT JOIN roomtypes rt ON r.TypeID = rt.TypeID
-        WHERE g.BookingID IS NOT NULL
+        WHERE g.BookingID IS NOT NULL AND b.IsDeleted = 0
         ORDER BY b.CheckIn DESC
         LIMIT ? OFFSET ?
     ";
@@ -699,7 +735,6 @@ class AdminController
 
         include __DIR__ . '/../Views/admin/current_guest.php';
     }
-
     // Checkout guest
     public function checkoutGuest()
     {
@@ -841,7 +876,6 @@ class AdminController
         }
     }
 
-    // Guest History page
     public function guestHistory()
     {
         // Statistics
@@ -868,26 +902,28 @@ class AdminController
         $totalHistory = $this->getValue("SELECT COUNT(*) FROM guest_history");
         $totalPages = ceil($totalHistory / $limit);
 
-        // Get guest history
+        // Get guest history with email from useraccounts via bookings
         $query = "
         SELECT 
-            HistoryID,
-            Name,
-            Email,
-            Contact,
-            RoomType,
-            RoomNumber,
-            Street,
-            Barangay,
-            City,
-            Province,
-            PostalCode,
-            CheckedInAt,
-            CheckedOutAt,
-            TotalAmount,
-            PaymentStatus
-        FROM guest_history
-        ORDER BY CheckedOutAt DESC
+            gh.HistoryID,
+            gh.Name,
+            COALESCE(NULLIF(gh.Email, ''), u.Email, 'N/A') AS Email,
+            gh.Contact,
+            gh.RoomType,
+            gh.RoomNumber,
+            gh.Street,
+            gh.Barangay,
+            gh.City,
+            gh.Province,
+            gh.PostalCode,
+            gh.CheckedInAt,
+            gh.CheckedOutAt,
+            gh.TotalAmount,
+            gh.PaymentStatus
+        FROM guest_history gh
+        LEFT JOIN bookings b ON gh.BookingID = b.BookingID
+        LEFT JOIN useraccounts u ON b.UserID = u.UserID
+        ORDER BY gh.CheckedOutAt DESC
         LIMIT ? OFFSET ?
     ";
 
