@@ -46,7 +46,7 @@ class StaffController
         $this->roomModel = new Room($this->db);
     }
 
-   public function index()
+    public function index()
     {
         $paymentStats = $this->paymentModel->getPaymentStats();
 
@@ -124,7 +124,7 @@ class StaffController
 
         include __DIR__ . '/../Views/staff/staffdashboard.php';
     }
-public function confirm()
+    public function confirm()
     {
         if (!isset($_GET['id'])) die("Invalid request");
         $id = intval($_GET['id']);
@@ -169,12 +169,25 @@ public function confirm()
             error_log("Updating room status to booked");
             $this->roomModel->updateAvailability($booking['RoomID'], 'booked');
 
-            // Update payment status if exists
             if (isset($booking['PaymentID'])) {
-                error_log("Updating payment status");
-                $this->paymentModel->updateStatus($booking['PaymentID'], 'completed');
-            }
+                // Get payment method from payments table
+                $paymentMethodQuery = "SELECT Method FROM payments WHERE PaymentID = ?";
+                $stmt = $this->db->prepare($paymentMethodQuery);
+                $stmt->execute([$booking['PaymentID']]);
+                $paymentData = $stmt->fetch(PDO::FETCH_ASSOC);
 
+                if ($paymentData) {
+                    $paymentMethod = strtolower(trim($paymentData['Method']));
+
+                    // Only mark as completed if NOT cash payment
+                    if ($paymentMethod !== 'cash') {
+                        error_log("Updating payment status to completed (Payment Method: {$paymentData['Method']})");
+                        $this->paymentModel->updateStatus($booking['PaymentID'], 'completed');
+                    } else {
+                        error_log("Payment method is Cash - keeping status as pending");
+                    }
+                }
+            }
             $this->db->commit();
             error_log("✅ Transaction committed - Booking confirmed WITHOUT guest entry");
 
@@ -237,7 +250,7 @@ public function confirm()
     /**
      * View Booking History (Archived/Deleted bookings)
      */
-public function history()
+    public function history()
     {
         // Statistics for archived bookings
         $stats = [
@@ -379,9 +392,6 @@ public function history()
         include __DIR__ . '/../Views/staff/reservation.php';
     }
 
-    /**
-     * Handles POST request to update reservation details.
-     */
     public function updateReservation()
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -403,6 +413,7 @@ public function history()
         $city = $_POST['city'] ?? '';
         $province = $_POST['province'] ?? '';
         $postalCode = $_POST['postal_code'] ?? '';
+        $paymentStatus = $_POST['payment_status'] ?? ''; // ✅ NEW
 
         if (!$bookingId) {
             header("Location: /Hotel_Reservation_System/app/public/index.php?controller=staff&action=reservations&error=invalid_booking");
@@ -419,22 +430,22 @@ public function history()
 
             // Update booking
             $updateQuery = "
-                UPDATE bookings 
-                SET 
-                    CheckIn = ?,
-                    CheckOut = ?,
-                    CheckIn_Time = ?,
-                    Guests = ?,
-                    Contact = ?,
-                    Email = ?,
-                    Street = ?,
-                    Barangay = ?,
-                    City = ?,
-                    Province = ?,
-                    PostalCode = ?,
-                    StatusID = ?
-                WHERE BookingID = ? AND IsDeleted = 0
-            ";
+            UPDATE bookings 
+            SET 
+                CheckIn = ?,
+                CheckOut = ?,
+                CheckIn_Time = ?,
+                Guests = ?,
+                Contact = ?,
+                Email = ?,
+                Street = ?,
+                Barangay = ?,
+                City = ?,
+                Province = ?,
+                PostalCode = ?,
+                StatusID = ?
+            WHERE BookingID = ? AND IsDeleted = 0
+        ";
 
             $stmt = $this->db->prepare($updateQuery);
             $stmt->execute([
@@ -453,12 +464,19 @@ public function history()
                 $bookingId
             ]);
 
+            if ($paymentStatus) {
+                $paymentUpdateQuery = "UPDATE payments SET Status = ? WHERE BookingID = ?";
+                $stmt = $this->db->prepare($paymentUpdateQuery);
+                $stmt->execute([$paymentStatus, $bookingId]);
+                error_log("✅ Payment status updated to '{$paymentStatus}' for Booking #{$bookingId}");
+            }
+
             // Update guest information if exists
             $guestQuery = "UPDATE guests SET Contact = ?, Email = ? WHERE BookingID = ?";
             $stmt = $this->db->prepare($guestQuery);
             $stmt->execute([$contact, $email, $bookingId]);
 
-            header("Location: /Hotel_Reservation_System/app/public/index.php?controller=staff&action=reservations");
+            header("Location: /Hotel_Reservation_System/app/public/index.php?controller=staff&action=reservations&success=updated");
             exit();
         } catch (\Exception $e) {
             error_log("Update reservation error: " . $e->getMessage());
@@ -470,12 +488,12 @@ public function history()
     /**
      * Checks in a guest for a specific reservation.
      */
-  public function checkinReservation()
+    public function checkinReservation()
     {
         error_log("=== CHECK-IN RESERVATION ===");
 
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            error_log("❌ Not a POST request");
+            error_log(" Not a POST request");
             header("Location: /Hotel_Reservation_System/app/public/index.php?controller=staff&action=reservations&error=invalid_method");
             exit();
         }
@@ -484,7 +502,7 @@ public function history()
         error_log("Booking ID: $bookingId");
 
         if (!$bookingId) {
-            error_log("❌ Invalid booking ID");
+            error_log(" Invalid booking ID");
             header("Location: /Hotel_Reservation_System/app/public/index.php?controller=staff&action=reservations&error=invalid_booking");
             exit();
         }
@@ -596,9 +614,9 @@ public function history()
             }
 
             $this->db->commit();
-            error_log("✅✅✅ Check-in completed successfully!");
+            error_log("Check-in completed successfully!");
 
-            header("Location: /Hotel_Reservation_System/app/public/index.php?controller=staff&action=currentGuests&success=checked_in");
+            header("Location: /Hotel_Reservation_System/app/public/index.php?controller=staff&action=reservations&success=checked_in");
             exit();
         } catch (Exception $e) {
             $this->db->rollBack();
@@ -612,7 +630,7 @@ public function history()
     /**
      * Displays a list of currently checked-in guests.
      */
-  public function currentGuests()
+    public function currentGuests()
     {
         // Statistics
         $stats = [
@@ -810,7 +828,7 @@ public function history()
     /**
      * Guest History Page (Checked-out guests)
      */
-       public function guestHistory()
+    public function guestHistory()
     {
         // Statistics
         $stats = [

@@ -33,8 +33,7 @@ class AdminController
 
         $_SESSION['last_activity'] = time();
 
-        // Authorization: Admin and Staff only
-        if (!isset($_SESSION['user_id']) || !in_array($_SESSION['role'], ['admin', 'staff'])) {
+        if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
             echo "<p style='text-align:center; color:red; font-family:sans-serif;'>🚫 You do not have authorization to access this page.</p>";
             header("refresh:2;url=/Hotel_Reservation_System/app/public/index.php?controller=login&action=index&error=unauthorized");
             exit;
@@ -49,59 +48,32 @@ class AdminController
     // Dashboard index
     public function index()
     {
-        $paymentStats = $this->paymentModel->getPaymentStats();
-
-        // Calculate total revenue from all confirmed bookings
-        $revenueQuery = "
+        try {
+            $revenueQuery = "
             SELECT 
-                b.BookingID,
-                b.CheckIn,
-                b.CheckOut,
-                b.Guests,
-                b.CheckIn_Time,
-                rt.Price AS room_price
+                SUM(
+                    (rt.Price * GREATEST(1, DATEDIFF(b.CheckOut, b.CheckIn))) + 
+                    (CASE WHEN b.Guests > 1 THEN (b.Guests - 1) * 300 ELSE 0 END) +
+                    (CASE WHEN TIME(b.CheckIn_Time) >= '18:00:00' THEN 500 ELSE 0 END)
+                ) AS total_revenue
             FROM bookings b
             JOIN rooms r ON b.RoomID = r.RoomID
             JOIN roomtypes rt ON r.TypeID = rt.TypeID
             JOIN booking_status bs ON b.StatusID = bs.StatusID
-            WHERE bs.StatusName = 'confirmed'
+            WHERE bs.StatusName IN ('confirmed', 'checked-in', 'checked-out')
             AND b.IsDeleted = 0
         ";
 
-        $stmt = $this->db->query($revenueQuery);
-        $confirmedBookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $stmt = $this->db->prepare($revenueQuery);
+            $stmt->execute();
+            $revenueResult = $stmt->fetch(PDO::FETCH_ASSOC);
+            $totalRevenue = $revenueResult['total_revenue'] ?? 0;
 
-        $totalRevenue = 0;
-        foreach ($confirmedBookings as $booking) {
-            $checkinTimestamp = strtotime($booking['CheckIn']);
-            $checkoutTimestamp = strtotime($booking['CheckOut']);
-            $nights = (int)ceil(($checkoutTimestamp - $checkinTimestamp) / (60 * 60 * 24));
-            $nights = max(1, $nights);
-
-            $roomPrice = $booking['room_price'] ?? 0;
-            $guests = $booking['Guests'] ?? 1;
-            $checkinTime = $booking['CheckIn_Time'] ?? '14:00';
-
-            $roomTotal = $roomPrice * $nights;
-            $guestFee = ($guests > 1) ? ($guests - 1) * 300 : 0;
-
-            $extraNightFee = 0;
-            if ($checkinTime) {
-                list($hours, $minutes) = explode(':', $checkinTime);
-                $hours = (int)$hours;
-                if ($hours >= 18) {
-                    $extraNightFee = 500;
-                }
-            }
-
-            $totalRevenue += $roomTotal + $guestFee + $extraNightFee;
-        }
-
-        // Dashboard statistics
-        $stats = [
-            'total_revenue' => $totalRevenue,
-            'total_bookings' => $this->getValue("SELECT COUNT(*) FROM bookings WHERE IsDeleted = 0"),
-            'upcoming_checkins' => $this->getValue("
+            // Dashboard statistics
+            $stats = [
+                'total_revenue' => $totalRevenue,
+                'total_bookings' => $this->getValue("SELECT COUNT(*) FROM bookings WHERE IsDeleted = 0"),
+                'upcoming_checkins' => $this->getValue("
                 SELECT COUNT(*) 
                 FROM bookings b
                 JOIN booking_status bs ON b.StatusID = bs.StatusID
@@ -110,22 +82,27 @@ class AdminController
                 AND bs.StatusName IN ('confirmed', 'pending')
                 AND b.IsDeleted = 0
             "),
-            'available_rooms' => $this->getValue("SELECT COUNT(*) FROM rooms WHERE Status = 'available'")
-        ];
+                'available_rooms' => $this->getValue("SELECT COUNT(*) FROM rooms WHERE Status = 'available'")
+            ];
 
-        // Pagination
-        $limit = 5;
-        $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
-        $offset = ($page - 1) * $limit;
+            // ✅ FIXED: Validation on pagination
+            $limit = 5;
+            $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+            $offset = ($page - 1) * $limit;
 
-        $totalBookings = $this->getValue("SELECT COUNT(*) FROM bookings WHERE IsDeleted = 0");
-        $totalPages = ceil($totalBookings / $limit);
+            $totalBookings = $this->getValue("SELECT COUNT(*) FROM bookings WHERE IsDeleted = 0");
+            $totalPages = max(1, ceil($totalBookings / $limit));
 
-        $bookings = $this->bookingModel->getAllBookings($limit, $offset);
+            $bookings = $this->bookingModel->getAllBookings($limit, $offset);
 
-        include __DIR__ . '/../Views/admin/dashboard.php';
+            include __DIR__ . '/../Views/admin/dashboard.php';
+        } catch (Exception $e) {
+            error_log("Dashboard error: " . $e->getMessage());
+            echo "<p style='color:red;'>Failed to load dashboard. Please try again.</p>";
+            return;
+        }
     }
-    
+
     public function confirm()
     {
         if (!isset($_GET['id'])) die("Invalid request");
@@ -171,12 +148,24 @@ class AdminController
             error_log("Updating room status to booked");
             $this->roomModel->updateAvailability($booking['RoomID'], 'booked');
 
-            // Update payment status if exists
+            // Update payment status if exists (but keep cash payments as pending)
             if (isset($booking['PaymentID'])) {
-                error_log("Updating payment status");
-                $this->paymentModel->updateStatus($booking['PaymentID'], 'completed');
-            }
+                $paymentMethodQuery = "SELECT Method FROM payments WHERE PaymentID = ?";
+                $stmt = $this->db->prepare($paymentMethodQuery);
+                $stmt->execute([$booking['PaymentID']]);
+                $paymentData = $stmt->fetch(PDO::FETCH_ASSOC);
 
+                if ($paymentData) {
+                    $paymentMethod = strtolower(trim($paymentData['Method']));
+
+                    if ($paymentMethod === 'cash') {
+                        error_log("💵 Payment is Cash - keeping status as PENDING");
+                    } else {
+                        $this->paymentModel->updateStatus($booking['PaymentID'], 'completed');
+                        error_log("✅ Payment status updated to COMPLETED (Method: {$paymentData['Method']})");
+                    }
+                }
+            }
             $this->db->commit();
             error_log("✅ Transaction committed - Booking confirmed WITHOUT guest entry");
 
@@ -237,14 +226,28 @@ class AdminController
     // View all payments
     public function payments()
     {
-        $limit = 10;
-        $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
-        $offset = ($page - 1) * $limit;
+        try {
+            $limit = 10;
+            $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+            $offset = ($page - 1) * $limit;
 
-        $payments = $this->paymentModel->getAllPayments($limit, $offset);
-        $paymentStats = $this->paymentModel->getPaymentStats();
+            $totalPayments = $this->getValue("SELECT COUNT(*) FROM payments");
+            $totalPages = max(1, ceil($totalPayments / $limit));
 
-        include __DIR__ . '/../Views/admin/payments.php';
+            // ✅ FIXED: Ensure page doesn't exceed total pages
+            if ($page > $totalPages && $totalPages > 0) {
+                $page = $totalPages;
+                $offset = ($page - 1) * $limit;
+            }
+
+            $payments = $this->paymentModel->getAllPayments($limit, $offset);
+            $paymentStats = $this->paymentModel->getPaymentStats();
+
+            include __DIR__ . '/../Views/admin/payments.php';
+        } catch (Exception $e) {
+            error_log("Payments page error: " . $e->getMessage());
+            echo "<p style='color:red;'>Failed to load payments. Please try again.</p>";
+        }
     }
 
     // Restore booking from history
@@ -433,6 +436,7 @@ class AdminController
         $city = $_POST['city'] ?? '';
         $province = $_POST['province'] ?? '';
         $postalCode = $_POST['postal_code'] ?? '';
+        $paymentStatus = $_POST['payment_status'] ?? ''; // ✅ NEW
 
         if (!$bookingId) {
             header("Location: /Hotel_Reservation_System/app/public/index.php?controller=admin&action=reservations&error=invalid_booking");
@@ -483,12 +487,19 @@ class AdminController
                 $bookingId
             ]);
 
+            if ($paymentStatus) {
+                $paymentUpdateQuery = "UPDATE payments SET Status = ? WHERE BookingID = ?";
+                $stmt = $this->db->prepare($paymentUpdateQuery);
+                $stmt->execute([$paymentStatus, $bookingId]);
+                error_log("✅ Payment status updated to '{$paymentStatus}' for Booking #{$bookingId}");
+            }
+
             // Update guest information if exists
             $guestQuery = "UPDATE guests SET Contact = ?, Email = ? WHERE BookingID = ?";
             $stmt = $this->db->prepare($guestQuery);
             $stmt->execute([$contact, $email, $bookingId]);
 
-            header("Location: /Hotel_Reservation_System/app/public/index.php?controller=admin&action=reservations");
+            header("Location: /Hotel_Reservation_System/app/public/index.php?controller=admin&action=reservations&success=updated");
             exit();
         } catch (\Exception $e) {
             error_log("Update reservation error: " . $e->getMessage());
@@ -496,6 +507,7 @@ class AdminController
             exit();
         }
     }
+
     public function checkinReservation()
     {
         error_log("=== CHECK-IN RESERVATION ===");
@@ -624,7 +636,7 @@ class AdminController
             $this->db->commit();
             error_log("✅✅✅ Check-in completed successfully!");
 
-            header("Location: /Hotel_Reservation_System/app/public/index.php?controller=admin&action=currentGuests&success=checked_in");
+            header("Location: /Hotel_Reservation_System/app/public/index.php?controller=admin&action=reservations&success=checked_in");
             exit();
         } catch (Exception $e) {
             $this->db->rollBack();

@@ -201,17 +201,27 @@ class BookingController
                 throw new \Exception("Failed to create booking");
             }
 
-            // Create payment record with calculated total
+            // ✅ FIXED: Determine payment status based on method
+            if (strtolower(trim($payment_method)) === 'cash') {
+                $paymentStatus = 'pending';  
+                error_log("Cash payment - Status: pending");
+            } else {
+                $paymentStatus = 'completed'; 
+                error_log("{$payment_method} payment - Status: completed");
+            }
+
             $paymentId = $this->paymentModel->create(
                 $newBookingId,
                 $payment_method,
                 $total,
-                'pending'
+                $paymentStatus  
             );
 
             if (!$paymentId) {
                 throw new \Exception("Failed to create payment record");
             }
+
+            error_log("Payment created: BookingID={$newBookingId}, Method={$payment_method}, Status={$paymentStatus}, Amount={$total}");
 
             // Create guest record
             $this->guestModel->create($newBookingId, $contact, $contact, $email);
