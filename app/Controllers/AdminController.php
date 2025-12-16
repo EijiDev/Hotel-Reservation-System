@@ -347,10 +347,9 @@ class AdminController
 
     public function reservations()
     {
-        // Add debugging
         error_log("=== RESERVATIONS PAGE LOADED ===");
 
-        // Statistics for reservations - bookings without guest entries
+        // Statistics for reservations - ONLY CONFIRMED bookings without guest entries
         $stats = [
             'total_reservations' => $this->getValue("
             SELECT COUNT(*) 
@@ -359,16 +358,14 @@ class AdminController
             LEFT JOIN booking_status bs ON b.StatusID = bs.StatusID
             WHERE b.IsDeleted = 0 
             AND g.GuestID IS NULL 
-            AND LOWER(bs.StatusName) NOT IN ('checked-out', 'cancelled')
+            AND LOWER(bs.StatusName) = 'confirmed'
         "),
             'pending_bookings' => $this->getValue("
             SELECT COUNT(*) 
             FROM bookings b
-            LEFT JOIN guests g ON b.BookingID = g.BookingID
             JOIN booking_status bs ON b.StatusID = bs.StatusID
             WHERE LOWER(bs.StatusName) = 'pending' 
             AND b.IsDeleted = 0
-            AND g.GuestID IS NULL
         "),
             'confirmed_today' => $this->getValue("
             SELECT COUNT(*) 
@@ -396,11 +393,11 @@ class AdminController
         LEFT JOIN booking_status bs ON b.StatusID = bs.StatusID
         WHERE b.IsDeleted = 0 
         AND g.GuestID IS NULL 
-        AND LOWER(bs.StatusName) NOT IN ('checked-out', 'cancelled')
+        AND LOWER(bs.StatusName) = 'confirmed'
     ");
         $totalPages = ceil($totalReservations / $limit);
 
-        // Get all reservations (bookings WITHOUT guests table entry)
+        // ✅ FIXED: Get ONLY CONFIRMED reservations (not pending, not cancelled, not checked-out)
         $query = "
         SELECT 
             b.BookingID,
@@ -415,6 +412,8 @@ class AdminController
             b.City,
             b.Province,
             b.PostalCode,
+            b.IDType,
+            b.IDImage,
             b.Created_At,
             u.Name AS GuestName,
             rt.Name AS RoomType,
@@ -433,8 +432,8 @@ class AdminController
         LEFT JOIN guests g ON b.BookingID = g.BookingID
         WHERE b.IsDeleted = 0 
         AND g.GuestID IS NULL 
-        AND LOWER(bs.StatusName) NOT IN ('checked-out', 'cancelled')
-        ORDER BY b.Created_At DESC
+        AND LOWER(bs.StatusName) = 'confirmed'
+        ORDER BY b.CheckIn ASC
         LIMIT ? OFFSET ?
     ";
 
@@ -449,7 +448,6 @@ class AdminController
 
         include __DIR__ . '/../Views/admin/reservation.php';
     }
-
     // Update reservation
     public function updateReservation()
     {
@@ -682,7 +680,7 @@ class AdminController
             exit();
         }
     }
-    // Current Guests page
+
     public function currentGuests()
     {
         // Statistics
@@ -698,7 +696,7 @@ class AdminController
         ")
         ];
 
-        // Pagination - Changed to 5
+        // Pagination
         $limit = 5;
         $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
         $offset = ($page - 1) * $limit;
@@ -706,12 +704,12 @@ class AdminController
         $totalGuests = $this->getValue("SELECT COUNT(*) FROM guests WHERE BookingID IS NOT NULL");
         $totalPages = ceil($totalGuests / $limit);
 
-        // Get current guests with booking details - Contact from bookings or guests, Email from useraccounts
+        // ✅ FIXED: Get guest name from useraccounts instead of guests.Name
         $query = "
         SELECT 
             g.GuestID,
             g.BookingID,
-            g.Name AS GuestName,
+            u.Name AS GuestName,
             COALESCE(NULLIF(b.Contact, ''), g.Contact, 'N/A') AS Contact,
             u.Email,
             b.CheckIn,
@@ -735,6 +733,7 @@ class AdminController
 
         include __DIR__ . '/../Views/admin/current_guest.php';
     }
+
     // Checkout guest
     public function checkoutGuest()
     {
@@ -875,7 +874,6 @@ class AdminController
             return;
         }
     }
-
     public function guestHistory()
     {
         // Statistics
@@ -894,7 +892,7 @@ class AdminController
         ")
         ];
 
-        // Pagination - Changed to 5
+        // Pagination
         $limit = 5;
         $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
         $offset = ($page - 1) * $limit;
@@ -902,11 +900,12 @@ class AdminController
         $totalHistory = $this->getValue("SELECT COUNT(*) FROM guest_history");
         $totalPages = ceil($totalHistory / $limit);
 
-        // Get guest history with email from useraccounts via bookings
+        // ✅ FIXED: Get guest name from useraccounts and calculate past visits dynamically
         $query = "
         SELECT 
             gh.HistoryID,
-            gh.Name,
+            gh.BookingID,
+            u.Name AS Name,
             COALESCE(NULLIF(gh.Email, ''), u.Email, 'N/A') AS Email,
             gh.Contact,
             gh.RoomType,
@@ -919,7 +918,14 @@ class AdminController
             gh.CheckedInAt,
             gh.CheckedOutAt,
             gh.TotalAmount,
-            gh.PaymentStatus
+            gh.PaymentStatus,
+            (
+                SELECT COUNT(*) 
+                FROM guest_history gh2 
+                LEFT JOIN bookings b2 ON gh2.BookingID = b2.BookingID
+                WHERE b2.UserID = b.UserID 
+                AND gh2.CheckedOutAt <= gh.CheckedOutAt
+            ) AS PastVisits
         FROM guest_history gh
         LEFT JOIN bookings b ON gh.BookingID = b.BookingID
         LEFT JOIN useraccounts u ON b.UserID = u.UserID

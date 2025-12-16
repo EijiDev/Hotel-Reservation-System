@@ -16,25 +16,38 @@ class Room
     /**
      * Get all rooms with room type information
      */
+    /**
+     * Get all rooms with room type information
+     * Excludes rooms with active bookings
+     */
     public function getAllRooms($limit = null)
     {
         $sql = "
-            SELECT 
-                r.RoomID,
-                r.RoomNumber,
-                r.Floor,
-                r.Status,
-                r.image,
-                r.rating,
-                rt.TypeID,
-                rt.Name AS room_name,
-                rt.Description,
-                rt.Price,
-                rt.Amenities
-            FROM rooms r
-            JOIN roomtypes rt ON r.TypeID = rt.TypeID
-            ORDER BY r.RoomID ASC
-        ";
+        SELECT 
+            r.RoomID,
+            r.RoomNumber,
+            r.Floor,
+            r.Status,
+            r.image,
+            r.rating,
+            rt.TypeID,
+            rt.Name AS room_name,
+            rt.Description,
+            rt.Price,
+            rt.Amenities
+        FROM rooms r
+        JOIN roomtypes rt ON r.TypeID = rt.TypeID
+        WHERE r.Status = 'available'
+        AND r.RoomID NOT IN (
+            SELECT DISTINCT b.RoomID
+            FROM bookings b
+            JOIN booking_status bs ON b.StatusID = bs.StatusID
+            WHERE bs.StatusName IN ('pending', 'confirmed', 'checked-in')
+            AND b.IsDeleted = 0
+            AND b.CheckOut >= CURDATE()
+        )
+        ORDER BY r.RoomID ASC
+    ";
 
         if ($limit) {
             $sql .= " LIMIT :limit";
@@ -91,26 +104,39 @@ class Room
     /**
      * Get rooms with pagination
      */
+    /**
+     * Get rooms with pagination
+     * Excludes rooms with active bookings
+     */
     public function getRoomsRange($offset = 0, $limit = 6)
     {
         $sql = "
-            SELECT 
-                r.RoomID,
-                r.RoomNumber,
-                r.Floor,
-                r.Status,
-                r.image,
-                r.rating,
-                rt.TypeID,
-                rt.Name AS room_name,
-                rt.Description,
-                rt.Price,
-                rt.Amenities
-            FROM rooms r
-            JOIN roomtypes rt ON r.TypeID = rt.TypeID
-            ORDER BY r.RoomID ASC
-            LIMIT :limit OFFSET :offset
-        ";
+        SELECT 
+            r.RoomID,
+            r.RoomNumber,
+            r.Floor,
+            r.Status,
+            r.image,
+            r.rating,
+            rt.TypeID,
+            rt.Name AS room_name,
+            rt.Description,
+            rt.Price,
+            rt.Amenities
+        FROM rooms r
+        JOIN roomtypes rt ON r.TypeID = rt.TypeID
+        WHERE r.Status = 'available'
+        AND r.RoomID NOT IN (
+            SELECT DISTINCT b.RoomID
+            FROM bookings b
+            JOIN booking_status bs ON b.StatusID = bs.StatusID
+            WHERE bs.StatusName IN ('pending', 'confirmed', 'checked-in')
+            AND b.IsDeleted = 0
+            AND b.CheckOut >= CURDATE()
+        )
+        ORDER BY r.RoomID ASC
+        LIMIT :limit OFFSET :offset
+    ";
 
         $stmt = $this->db->prepare($sql);
         $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);

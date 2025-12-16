@@ -8,6 +8,49 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" href="../public/assets/Lunera-Logo.png" type="image/ico">
     <title>Admin Dashboard - Bookings</title>
+    <style>
+        /* Alert Styles */
+        .alert {
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border-left: 4px solid #ffc107;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -56,6 +99,9 @@
 
     <div class="main">
         <h1>Admin Dashboard</h1>
+
+        <!-- Alert Container -->
+        <div id="alertContainer"></div>
 
         <div class="stats">
             <div class="card">
@@ -223,10 +269,21 @@
                             $bookingStatus = strtolower($b['booking_status'] ?? 'pending');
 
                             // payment_method comes from payments table
-                            $paymentMethod = $b['payment_method'] ?? 'Cash';
+                            $paymentMethod = strtolower($b['payment_method'] ?? 'cash');
 
                             // payment_status comes from payments table
                             $paymentStatus = strtolower($b['payment_status'] ?? 'pending');
+
+                            // ✅ NEW: Display logic for payment status
+                            $displayPaymentStatus = $paymentStatus;
+                            $displayPaymentClass = $paymentStatus;
+
+                            // If booking is cancelled, payment method is Cash, and payment is pending
+                            // Show "Not Refunded" instead of "Pending"
+                            if ($bookingStatus === 'cancelled' && $paymentMethod === 'cash' && $paymentStatus === 'pending') {
+                                $displayPaymentStatus = 'not refunded';
+                                $displayPaymentClass = 'not-refunded';
+                            }
 
                             // Disable confirm button if already confirmed or cancelled
                             $confirmDisabled = in_array($bookingStatus, ['confirmed', 'cancelled', 'checked-in', 'checked-out']);
@@ -251,17 +308,26 @@
                                 </td>
                                 <td><?= date('M d, Y', strtotime($b['CheckOut'])) ?></td>
                                 <td><span class="status <?= $bookingStatus ?>"><?= ucfirst($bookingStatus) ?></span></td>
-                                <td><span class="payment <?= $paymentStatus ?>"><?= ucfirst($paymentStatus) ?></span></td>
-                                <td><?= ucfirst($paymentMethod) ?></td>
+                                <td>
+                                    <span class="payment <?= $displayPaymentClass ?>">
+                                        <?= ucwords($displayPaymentStatus) ?>
+                                    </span>
+                                </td>
+                                <td><?= ucfirst($b['payment_method'] ?? 'Cash') ?></td>
                                 <td>₱<?= number_format($displayTotal, 2) ?></td>
                                 <td class="actions">
                                     <a href="/Hotel_Reservation_System/app/public/index.php?controller=admin&action=confirm&id=<?= $b['BookingID'] ?>"
-                                        class="btn-confirm"
+                                        class="btn-confirm confirm-btn"
+                                        data-booking-id="<?= $b['BookingID'] ?>"
+                                        data-status="<?= $bookingStatus ?>"
                                         <?php if ($confirmDisabled) echo 'style="pointer-events:none; opacity:0.5;"'; ?>>
                                         Confirm
                                     </a>
-                                    <a href="/Hotel_Reservation_System/app/public/index.php?controller=admin&action=delete&id=<?= $b['BookingID'] ?>"
-                                        class="btn-delete" onclick="return confirm('Move this booking to history?')">
+                                    <a href="#"
+                                        class="btn-delete archive-btn"
+                                        data-booking-id="<?= $b['BookingID'] ?>"
+                                        data-status="<?= $bookingStatus ?>"
+                                        data-payment="<?= $displayPaymentStatus ?>">
                                         Archive
                                     </a>
                                 </td>
@@ -292,6 +358,126 @@
             <?php endif; ?>
         </div>
     </div>
+
+    <script>
+        // Alert function
+        function showAlert(message, type = 'error') {
+            const alertContainer = document.getElementById('alertContainer');
+            const icons = {
+                error: 'fa-circle-exclamation',
+                success: 'fa-circle-check',
+                warning: 'fa-triangle-exclamation'
+            };
+
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.innerHTML = `
+            <i class="fa-solid ${icons[type]}"></i>
+            <span>${message}</span>
+        `;
+
+            alertContainer.appendChild(alertDiv);
+
+            setTimeout(() => {
+                alertDiv.style.opacity = '0';
+                alertDiv.style.transform = 'translateY(-10px)';
+                setTimeout(() => alertDiv.remove(), 300);
+            }, 5000);
+        }
+
+        // Archive button validation
+        document.querySelectorAll('.archive-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+
+                const bookingId = this.dataset.bookingId;
+                const status = this.dataset.status;
+                const payment = this.dataset.payment;
+
+                // Validation: Cannot archive if checked-out with refunded payment
+                if (status === 'checked-out' && payment === 'refunded') {
+                    showAlert('Cannot archive checked-out booking with refunded payment. This booking needs to remain visible for financial records.', 'error');
+                    return;
+                }
+
+                // Validation: Cannot archive if checked-in
+                if (status === 'checked-in') {
+                    showAlert('Cannot archive a checked-in booking. Please check out the guest first.', 'error');
+                    return;
+                }
+
+                // Show confirmation dialog
+                const confirmMsg = status === 'checked-out' ?
+                    'Move this completed booking to history?\n\nThis booking will be archived but still visible to the user.' :
+                    'Move this booking to history?\n\nThis will archive the booking but keep it visible to the user.';
+
+                if (confirm(confirmMsg)) {
+                    window.location.href = `/Hotel_Reservation_System/app/public/index.php?controller=admin&action=delete&id=${bookingId}`;
+                }
+            });
+        });
+
+        // Confirm button validation (prevent confirming already confirmed)
+        document.querySelectorAll('.confirm-btn:not([style*="pointer-events"])').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                const status = this.dataset.status;
+
+                if (status === 'confirmed') {
+                    e.preventDefault();
+                    showAlert('This booking is already confirmed', 'warning');
+                    return false;
+                }
+
+                if (status === 'cancelled') {
+                    e.preventDefault();
+                    showAlert('Cannot confirm a cancelled booking', 'error');
+                    return false;
+                }
+
+                if (status === 'checked-out') {
+                    e.preventDefault();
+                    showAlert('This booking is already completed', 'warning');
+                    return false;
+                }
+            });
+        });
+
+        // Check for URL parameters
+        window.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+
+            if (urlParams.has('success')) {
+                const successType = urlParams.get('success');
+                const messages = {
+                    'confirmed': 'Booking confirmed successfully!',
+                    'archived': 'Booking moved to history successfully!'
+                };
+                showAlert(messages[successType] || 'Operation completed successfully!', 'success');
+
+                // Remove success parameter from URL without refreshing
+                urlParams.delete('success');
+                const newUrl = urlParams.toString() ?
+                    `${window.location.pathname}?${urlParams.toString()}` :
+                    window.location.pathname;
+                window.history.replaceState({}, '', newUrl);
+            } else if (urlParams.has('error')) {
+                const errorType = urlParams.get('error');
+                const messages = {
+                    'already_confirmed': 'This booking is already confirmed',
+                    'confirm_failed': 'Failed to confirm booking. Please try again.',
+                    'cannot_archive': 'Cannot archive this booking'
+                };
+                showAlert(messages[errorType] || 'An error occurred', 'error');
+
+                // Remove error parameter from URL without refreshing
+                urlParams.delete('error');
+                const newUrl = urlParams.toString() ?
+                    `${window.location.pathname}?${urlParams.toString()}` :
+                    window.location.pathname;
+                window.history.replaceState({}, '', newUrl);
+            }
+        });
+    </script>
     <script src="../public/js/dashboardFiltering.js"></script>
 </body>
 

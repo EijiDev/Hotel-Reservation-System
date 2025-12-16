@@ -86,161 +86,203 @@ class BookingController
     }
 
     // Store new booking or update existing
-    public function store()
-    {
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            http_response_code(405);
-            exit('Method Not Allowed');
-        }
-
-        // Get form inputs
-        $bookingId      = !empty($_POST['booking_id']) ? (int)$_POST['booking_id'] : null;
-        $checkin        = $_POST['checkin'] ?? null;
-        $checkout       = $_POST['checkout'] ?? null;
-        $guests         = isset($_POST['guests']) ? (int)$_POST['guests'] : 1;
-        $checkin_time   = $_POST['checkin_time'] ?? null;
-        $contact        = $_POST['contact'] ?? null;
-        $email          = $_POST['email'] ?? null;
-        $payment_method = $_POST['payment_method'] ?? null;
-        $room_id        = isset($_POST['room_id']) ? (int)$_POST['room_id'] : null;
-        $user_id        = $_SESSION['user_id'];
-
-        // Validate required fields
-        if (!$room_id || !$checkin || !$checkout || !$payment_method) {
-            http_response_code(400);
-            exit("Missing required fields.");
-        }
-
-        $room = $this->roomModel->getRoomById($room_id);
-        if (!$room) {
-            http_response_code(404);
-            exit("Room not found.");
-        }
-
-        // Calculate total amount
-        $checkinTimestamp = strtotime($checkin);
-        $checkoutTimestamp = strtotime($checkout);
-        $nights = max(1, (int)ceil(($checkoutTimestamp - $checkinTimestamp) / 86400));
-
-        $roomTotal = $room['room_price'] * $nights;
-        $guestFee = ($guests > 1) ? ($guests - 1) * 300 : 0;
-
-        $extraNightFee = 0;
-        if ($checkin_time && (int)explode(':', $checkin_time)[0] >= 18) {
-            $extraNightFee = 500;
-        }
-
-        $total = $roomTotal + $guestFee + $extraNightFee;
-
-        // Debug logging
-        error_log("=== BOOKING CALCULATION ===");
-        error_log("Check-in: {$checkin}, Check-out: {$checkout}");
-        error_log("Nights: {$nights}");
-        error_log("Room Price: {$room['room_price']}");
-        error_log("Room Total: {$roomTotal}");
-        error_log("Guests: {$guests}, Guest Fee: {$guestFee}");
-        error_log("Check-in Time: {$checkin_time}, Extra Night Fee: {$extraNightFee}");
-        error_log("TOTAL: {$total}");
-
-        // UPDATE existing booking
-        if ($bookingId) {
-            $existing = $this->bookingModel->getBookingById($bookingId);
-            if (!$existing) {
-                http_response_code(404);
-                exit("Booking not found.");
-            }
-
-            // Authorization check
-            if ($existing['UserID'] != $user_id) {
-                $role = $_SESSION['role'] ?? 'user';
-                if (!in_array($role, ['staff', 'admin'])) {
-                    http_response_code(403);
-                    exit("Unauthorized to update this booking.");
-                }
-            }
-
-            $this->bookingModel->updateBooking(
-                $bookingId,
-                $checkin,
-                $checkout,
-                $guests,
-                $checkin_time,
-                $contact,
-                $email
-            );
-
-            // Update payment amount
-            if (isset($existing['PaymentID'])) {
-                $this->paymentModel->update($existing['PaymentID'], [
-                    'Method' => $payment_method,
-                    'Amount' => $total
-                ]);
-            }
-
-            header("Location: /Hotel_Reservation_System/app/public/index.php?controller=booking&action=userBookings&success=updated");
-            exit();
-        }
-
-        // CREATE new booking
-        try {
-            $this->db->beginTransaction();
-
-            // Create booking
-            $newBookingId = $this->bookingModel->create(
-                $checkin,
-                $checkout,
-                $guests,
-                $checkin_time,
-                $contact,
-                $email,
-                $room_id,
-                $user_id
-            );
-
-            if (!$newBookingId) {
-                throw new \Exception("Failed to create booking");
-            }
-
-            // ✅ FIXED: Determine payment status based on method
-            if (strtolower(trim($payment_method)) === 'cash') {
-                $paymentStatus = 'pending';  
-                error_log("Cash payment - Status: pending");
-            } else {
-                $paymentStatus = 'completed'; 
-                error_log("{$payment_method} payment - Status: completed");
-            }
-
-            $paymentId = $this->paymentModel->create(
-                $newBookingId,
-                $payment_method,
-                $total,
-                $paymentStatus  
-            );
-
-            if (!$paymentId) {
-                throw new \Exception("Failed to create payment record");
-            }
-
-            error_log("Payment created: BookingID={$newBookingId}, Method={$payment_method}, Status={$paymentStatus}, Amount={$total}");
-
-            // Create guest record
-            $this->guestModel->create($newBookingId, $contact, $contact, $email);
-
-            // Update room status
-            $this->roomModel->updateAvailability($room_id, 'booked');
-
-            $this->db->commit();
-
-            header("Location: /Hotel_Reservation_System/app/public/index.php?controller=booking&action=userBookings&success=booking_created");
-            exit();
-        } catch (\Exception $e) {
-            $this->db->rollBack();
-            error_log("Booking creation failed: " . $e->getMessage());
-            http_response_code(500);
-            exit("Could not create booking. Try again later.");
-        }
+public function store()
+{
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        http_response_code(405);
+        exit('Method Not Allowed');
     }
 
+    // Get form inputs
+    $bookingId      = !empty($_POST['booking_id']) ? (int)$_POST['booking_id'] : null;
+    $checkin        = $_POST['checkin'] ?? null;
+    $checkout       = $_POST['checkout'] ?? null;
+    $guests         = isset($_POST['guests']) ? (int)$_POST['guests'] : 1;
+    $checkin_time   = $_POST['checkin_time'] ?? null;
+    $contact        = $_POST['contact'] ?? null;
+    $email          = $_POST['email'] ?? null;
+    $payment_method = $_POST['payment_method'] ?? null;
+    $room_id        = isset($_POST['room_id']) ? (int)$_POST['room_id'] : null;
+    $user_id        = $_SESSION['user_id'];
+
+    // Get ID Type and handle ID Image upload
+    $id_type = $_POST['id_type'] ?? null;
+    $id_image = null;
+
+    // Validate required fields
+    if (!$room_id || !$checkin || !$checkout || !$payment_method) {
+        http_response_code(400);
+        exit("Missing required fields.");
+    }
+
+    $room = $this->roomModel->getRoomById($room_id);
+    if (!$room) {
+        http_response_code(404);
+        exit("Room not found.");
+    }
+
+    // Handle ID Image Upload
+    if (isset($_FILES['id_image']) && $_FILES['id_image']['error'] === UPLOAD_ERR_OK) {
+        $uploadDir = __DIR__ . '/../../uploads/ids/';
+
+        // Create directory if it doesn't exist
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+            error_log("✅ Created uploads/ids directory");
+        }
+
+        $fileExtension = strtolower(pathinfo($_FILES['id_image']['name'], PATHINFO_EXTENSION));
+        $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif'];
+
+        if (in_array($fileExtension, $allowedExtensions)) {
+            // Generate unique filename
+            $id_image = uniqid() . '_' . preg_replace('/[^a-zA-Z0-9_.-]/', '_', $_FILES['id_image']['name']);
+            $uploadPath = $uploadDir . $id_image;
+
+            if (move_uploaded_file($_FILES['id_image']['tmp_name'], $uploadPath)) {
+                error_log("✅ ID image uploaded: {$id_image}");
+            } else {
+                error_log("❌ Failed to move uploaded file");
+                $id_image = null;
+            }
+        } else {
+            error_log("❌ Invalid file extension: {$fileExtension}");
+        }
+    } else {
+        $uploadError = $_FILES['id_image']['error'] ?? 'No file uploaded';
+        error_log("❌ ID image upload failed. Error: {$uploadError}");
+    }
+
+    // Calculate total amount
+    $checkinTimestamp = strtotime($checkin);
+    $checkoutTimestamp = strtotime($checkout);
+    $nights = max(1, (int)ceil(($checkoutTimestamp - $checkinTimestamp) / 86400));
+
+    $roomTotal = $room['room_price'] * $nights;
+    $guestFee = ($guests > 1) ? ($guests - 1) * 300 : 0;
+
+    $extraNightFee = 0;
+    if ($checkin_time && (int)explode(':', $checkin_time)[0] >= 18) {
+        $extraNightFee = 500;
+    }
+
+    $total = $roomTotal + $guestFee + $extraNightFee;
+
+    // Debug logging
+    error_log("=== BOOKING CREATION ===");
+    error_log("ID Type: " . ($id_type ?? 'NULL'));
+    error_log("ID Image: " . ($id_image ?? 'NULL'));
+    error_log("Check-in: {$checkin}, Check-out: {$checkout}");
+    error_log("Nights: {$nights}");
+    error_log("Room Price: {$room['room_price']}");
+    error_log("Room Total: {$roomTotal}");
+    error_log("Guests: {$guests}, Guest Fee: {$guestFee}");
+    error_log("Check-in Time: {$checkin_time}, Extra Night Fee: {$extraNightFee}");
+    error_log("TOTAL: {$total}");
+
+    // UPDATE existing booking
+    if ($bookingId) {
+        $existing = $this->bookingModel->getBookingById($bookingId);
+        if (!$existing) {
+            http_response_code(404);
+            exit("Booking not found.");
+        }
+
+        // Authorization check
+        if ($existing['UserID'] != $user_id) {
+            $role = $_SESSION['role'] ?? 'user';
+            if (!in_array($role, ['staff', 'admin'])) {
+                http_response_code(403);
+                exit("Unauthorized to update this booking.");
+            }
+        }
+
+        $this->bookingModel->updateBooking(
+            $bookingId,
+            $checkin,
+            $checkout,
+            $guests,
+            $checkin_time,
+            $contact,
+            $email
+        );
+
+        // Update payment amount
+        if (isset($existing['PaymentID'])) {
+            $this->paymentModel->update($existing['PaymentID'], [
+                'Method' => $payment_method,
+                'Amount' => $total
+            ]);
+        }
+
+        header("Location: /Hotel_Reservation_System/app/public/index.php?controller=booking&action=userBookings&success=updated");
+        exit();
+    }
+
+    // CREATE new booking
+    try {
+        $this->db->beginTransaction();
+
+        // Create booking WITH ID fields
+        $newBookingId = $this->bookingModel->create(
+            $checkin,
+            $checkout,
+            $guests,
+            $checkin_time,
+            $contact,
+            $email,
+            $room_id,
+            $user_id,
+            $id_type,
+            $id_image
+        );
+
+        if (!$newBookingId) {
+            throw new \Exception("Failed to create booking");
+        }
+
+        error_log("✅ Booking created with ID: {$newBookingId}, IDType: {$id_type}, IDImage: {$id_image}");
+
+        // Determine payment status based on method
+        if (strtolower(trim($payment_method)) === 'cash') {
+            $paymentStatus = 'pending';
+            error_log("Cash payment - Status: pending");
+        } else {
+            $paymentStatus = 'completed';
+            error_log("{$payment_method} payment - Status: completed");
+        }
+
+        $paymentId = $this->paymentModel->create(
+            $newBookingId,
+            $payment_method,
+            $total,
+            $paymentStatus
+        );
+
+        if (!$paymentId) {
+            throw new \Exception("Failed to create payment record");
+        }
+
+        error_log("Payment created: BookingID={$newBookingId}, Method={$payment_method}, Status={$paymentStatus}, Amount={$total}");
+
+        $this->db->commit();
+
+        header("Location: /Hotel_Reservation_System/app/public/index.php?controller=booking&action=userBookings&success=booking_created");
+        exit();
+    } catch (\Exception $e) {
+        $this->db->rollBack();
+        error_log("Booking creation failed: " . $e->getMessage());
+
+        // Clean up uploaded file if booking failed
+        if ($id_image && file_exists($uploadDir . $id_image)) {
+            unlink($uploadDir . $id_image);
+            error_log("🗑️ Cleaned up uploaded ID image due to booking failure");
+        }
+
+        http_response_code(500);
+        exit("Could not create booking. Try again later.");
+    }
+}
     // View user bookings
     public function userBookings()
     {

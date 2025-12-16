@@ -158,21 +158,23 @@ class Booking
     /**
      * Create a new booking
      */
-    public function create($checkin, $checkout, $guests, $checkin_time, $contact, $email, $room_id, $user_id, $statusId = null)
+    public function create($checkin, $checkout, $guests, $checkin_time, $contact, $email, $room_id, $user_id, $id_type = null, $id_image = null, $statusId = null)
     {
         if ($statusId === null) {
             $statusId = $this->getStatusIdByName('pending');
         }
 
         $sql = "
-            INSERT INTO bookings (
-                CheckIn, CheckOut, Guests, CheckIn_Time, 
-                Contact, Email, RoomID, UserID, StatusID
-            ) VALUES (
-                :checkin, :checkout, :guests, :checkin_time, 
-                :contact, :email, :room_id, :user_id, :status_id
-            )
-        ";
+        INSERT INTO bookings (
+            CheckIn, CheckOut, Guests, CheckIn_Time, 
+            Contact, Email, RoomID, UserID, StatusID,
+            IDType, IDImage
+        ) VALUES (
+            :checkin, :checkout, :guests, :checkin_time, 
+            :contact, :email, :room_id, :user_id, :status_id,
+            :id_type, :id_image
+        )
+    ";
 
         $stmt = $this->db->prepare($sql);
         $stmt->bindValue(':checkin', $checkin);
@@ -184,10 +186,11 @@ class Booking
         $stmt->bindValue(':room_id', $room_id, PDO::PARAM_INT);
         $stmt->bindValue(':user_id', $user_id, PDO::PARAM_INT);
         $stmt->bindValue(':status_id', $statusId, PDO::PARAM_INT);
+        $stmt->bindValue(':id_type', $id_type);
+        $stmt->bindValue(':id_image', $id_image);
 
         return $stmt->execute() ? $this->db->lastInsertId() : false;
     }
-
     /**
      * Update booking details
      */

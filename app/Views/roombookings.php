@@ -157,6 +157,16 @@ foreach ($existingBookings as $b) {
                     </div>
                 </div>
 
+                <label>Payment Option</label>
+                <div class="input-group">
+                    <i class="bx bx-credit-card"></i>
+                    <select name="payment_method" required>
+                        <option value="">Select a payment method</option>
+                        <option value="Cash" <?= isset($editingBooking) && $editingBooking['payment_method'] === 'Cash' ? 'selected' : '' ?>>Cash</option>
+                        <option value="GCash" <?= isset($editingBooking) && $editingBooking['payment_method'] === 'GCash' ? 'selected' : '' ?>>GCash</option>
+                    </select>
+                </div>
+
                 <div class="form-row">
                     <div style="flex: 1; min-width: 100%;">
                         <label>ID Type</label>
@@ -184,16 +194,6 @@ foreach ($existingBookings as $b) {
                             <input type="file" name="id_image" accept="image/*" required>
                         </label>
                     </div>
-                </div>
-
-                <label>Payment Option</label>
-                <div class="input-group">
-                    <i class="bx bx-credit-card"></i>
-                    <select name="payment_method" required>
-                        <option value="">Select a payment method</option>
-                        <option value="Cash" <?= isset($editingBooking) && $editingBooking['payment_method'] === 'Cash' ? 'selected' : '' ?>>Cash</option>
-                        <option value="GCash" <?= isset($editingBooking) && $editingBooking['payment_method'] === 'GCash' ? 'selected' : '' ?>>GCash</option>
-                    </select>
                 </div>
 
                 <button type="submit" id="openModalBtn" <?= !$isAvailable && !isset($editingBooking) ? 'disabled style="background:#ccc; cursor:not-allowed;"' : '' ?>>
@@ -240,4 +240,5 @@ foreach ($existingBookings as $b) {
     </div>
     <script src="../public/js/bookingsvalidation.js"></script>
 </body>
+
 </html>

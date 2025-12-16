@@ -30,6 +30,71 @@ function checkDateOverlap(checkin, checkout) {
   return false;
 }
 
+// ID Type validation patterns
+const idPatterns = {
+  'School ID': {
+    pattern: /^[A-Z0-9]{4,20}$/i,
+    message: 'School ID should be 4-20 alphanumeric characters'
+  },
+  'National ID': {
+    pattern: /^[0-9]{4}-[0-9]{4}-[0-9]{4}-[0-9]{4}$/,
+    message: 'National ID format: XXXX-XXXX-XXXX-XXXX (16 digits)'
+  },
+  'Postal ID': {
+    pattern: /^[A-Z]{3}[0-9]{10}$/i,
+    message: 'Postal ID format: XXX followed by 10 digits (e.g., PHL1234567890)'
+  }
+};
+
+// Real-time ID preview
+const idFileInput = form.querySelector('input[name="id_image"]');
+const idDropzone = document.querySelector('.id-dropzone');
+const idDropTitle = document.querySelector('.id-drop-title');
+const idDropSub = document.querySelector('.id-drop-sub');
+
+if (idFileInput) {
+  idFileInput.addEventListener('change', function() {
+    const file = this.files[0];
+    
+    if (file) {
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        idDropTitle.innerHTML = `<i class="bx bx-check-circle" style="color: #28a745;"></i> ${file.name}`;
+        idDropSub.textContent = `Size: ${(file.size / 1024).toFixed(2)} KB`;
+        idDropzone.style.borderColor = '#28a745';
+        idDropzone.style.backgroundColor = '#f0f9f0';
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+
+  // Drag and drop functionality
+  idDropzone.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    this.style.borderColor = '#007bff';
+    this.style.backgroundColor = '#f0f8ff';
+  });
+
+  idDropzone.addEventListener('dragleave', function(e) {
+    e.preventDefault();
+    this.style.borderColor = '#ddd';
+    this.style.backgroundColor = '#f9f9f9';
+  });
+
+  idDropzone.addEventListener('drop', function(e) {
+    e.preventDefault();
+    this.style.borderColor = '#ddd';
+    this.style.backgroundColor = '#f9f9f9';
+    
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      idFileInput.files = files;
+      idFileInput.dispatchEvent(new Event('change'));
+    }
+  });
+}
+
 if (form) {
   form.addEventListener("submit", (e) => {
     e.preventDefault();
@@ -42,10 +107,9 @@ if (form) {
     const paymentMethod = form.payment_method.value;
     const checkinTime = form.checkin_time.value;
     const idType = form.id_type ? form.id_type.value : "";
-    const idFileInput = form.id_image;
     const idFile = idFileInput && idFileInput.files[0];
 
-    // Validation
+    // Basic validation
     if (
       !checkin ||
       !checkout ||
@@ -58,11 +122,29 @@ if (form) {
       return;
     }
 
-      // NEW: validate ID image extension and size (e.g., max 3 MB)
+    // ===== ID TYPE VALIDATION =====
+    if (!idType) {
+      alert("Please select an ID type.");
+      form.id_type.focus();
+      return;
+    }
+
+    if (!["School ID", "National ID", "Postal ID"].includes(idType)) {
+      alert("Please select a valid ID type from the dropdown.");
+      form.id_type.focus();
+      return;
+    }
+
+    // ===== ID IMAGE VALIDATION =====
+    if (!idFile) {
+      alert("Please upload your ID image.");
+      idFileInput.focus();
+      return;
+    }
+
+    // Validate file type
     const allowedExtensions = ["jpg", "jpeg", "png", "webp"];
-    const maxSizeMB = 3;
     const fileName = idFile.name.toLowerCase();
-    const fileSizeMB = idFile.size / (1024 * 1024);
     const ext = fileName.split(".").pop();
 
     if (!allowedExtensions.includes(ext)) {
@@ -72,28 +154,27 @@ if (form) {
       return;
     }
 
+    // Validate file size (max 3 MB)
+    const maxSizeMB = 3;
+    const fileSizeMB = idFile.size / (1024 * 1024);
+
     if (fileSizeMB > maxSizeMB) {
-      alert("ID image must be smaller than 3 MB.");
+      alert(`ID image must be smaller than ${maxSizeMB} MB. Your file is ${fileSizeMB.toFixed(2)} MB.`);
       idFileInput.value = "";
       idFileInput.focus();
       return;
     }
 
-    // OPTIONAL: show file name in the drag area
-    const idDropTitle = document.querySelector(".id-drop-title");
-    if (idDropTitle) {
-      idDropTitle.textContent = idFile.name;
-    }
+    // Validate minimum file size (at least 10 KB to avoid blank images)
+    const minSizeKB = 10;
+    const fileSizeKB = idFile.size / 1024;
 
-    // OPTIONAL: “match” ID type rule (example only)
-    // here you just ensure something is selected;
-    // real matching of content to ID type must be done on the server or manually
-    if (!["School ID", "National ID", "Postal ID"].includes(idType)) {
-      alert("Please select a valid ID type.");
-      form.id_type.focus();
+    if (fileSizeKB < minSizeKB) {
+      alert(`ID image is too small (${fileSizeKB.toFixed(2)} KB). Please upload a clear photo of your ID (minimum ${minSizeKB} KB).`);
+      idFileInput.value = "";
+      idFileInput.focus();
       return;
     }
-
 
     // Guest limit validation (max 5 guests)
     if (guests < 1 || guests > 5) {
@@ -144,7 +225,7 @@ if (form) {
     }
 
     if (!isValidContact) {
-      alert("Please enter a valid phone number.\n• Philippine mobile: 09xxxxxxxxx or +639xxxxxxxxx");
+      alert("Please enter a valid phone number.\n• Philippine mobile: 09xxxxxxxxx or +639xxxxxxxxx\n• Philippine landline: 02xxxxxxxx or +632xxxxxxxx\n• International: +[country code][number]");
       form.contact.focus();
       return;
     }
@@ -267,9 +348,22 @@ if (form.guests) {
     const guests = parseInt(this.value);
     if (guests > 5) {
       this.value = 5;
-      alert("Maximum 5 guests only allowed");
+      alert("Maximum 5 guests allowed");
     } else if (guests < 1) {
       this.value = 1;
+    }
+  });
+}
+
+// Real-time ID type validation hint
+if (form.id_type) {
+  form.id_type.addEventListener("change", function() {
+    const idType = this.value;
+    const hint = idPatterns[idType];
+    
+    if (hint) {
+      // You can display this hint near the ID type dropdown if needed
+      console.log(`Selected ${idType}: ${hint.message}`);
     }
   });
 }
