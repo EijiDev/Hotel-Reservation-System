@@ -65,24 +65,6 @@
                     </a>
                 </li>
                 <li class="dashboard-bar">
-                    <a href="/Hotel_Reservation_System/app/public/index.php?controller=admin&action=reservations"
-                        style="color: #fff; text-decoration: none; display: block;">
-                        <i class="fa-solid fa-calendar-check"></i> Reservations
-                    </a>
-                </li>
-                <li class="dashboard-bar">
-                    <a href="/Hotel_Reservation_System/app/public/index.php?controller=admin&action=currentGuests"
-                        style="color: #fff; text-decoration: none; display: block;">
-                        <i class="fa-solid fa-users"></i> Current Guests
-                    </a>
-                </li>
-                <li class="dashboard-bar">
-                    <a href="/Hotel_Reservation_System/app/public/index.php?controller=admin&action=guestHistory"
-                        style="color: #fff; text-decoration: none; display: block;">
-                        <i class="fa-solid fa-user-clock"></i> Guest History
-                    </a>
-                </li>
-                <li class="dashboard-bar">
                     <a href="/Hotel_Reservation_System/app/public/index.php?controller=admin&action=history"
                         style="color: #fff; text-decoration: none; display: block;">
                         <i class="fa-solid fa-receipt"></i> Booking History

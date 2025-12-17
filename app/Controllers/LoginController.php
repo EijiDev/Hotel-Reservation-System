@@ -79,7 +79,9 @@ class LoginController
             $_SESSION['last_activity'] = time();
             $_SESSION['last_activity_check'] = time();
 
+            // DEBUG: Log what role is being set
             error_log("✅ User logged in: UserID=" . $user['UserID'] . ", Email=" . $email . ", Role=" . $user['Role']);
+            error_log("DEBUG Session contents: " . print_r($_SESSION, true));
 
             // Redirect based on user role
             $this->redirectBasedOnRole($user['Role']);
@@ -95,17 +97,27 @@ class LoginController
      */
     private function redirectBasedOnRole($role)
     {
+        error_log("DEBUG redirectBasedOnRole called with role: " . $role);
+        
         switch (strtolower($role)) {
             case 'admin':
+                error_log("DEBUG Redirecting to admin");
                 header("Location: /Hotel_Reservation_System/app/public/index.php?controller=admin&action=index");
                 exit();
             
             case 'staff':
+                error_log("DEBUG Redirecting to staff");
                 header("Location: /Hotel_Reservation_System/app/public/index.php?controller=staff&action=index");
+                exit();
+            
+            case 'guest_staff':
+                error_log("DEBUG Redirecting to guest_staff");
+                header("Location: /Hotel_Reservation_System/app/public/index.php?controller=guest&action=reservations");
                 exit();
             
             case 'user':
             default:
+                error_log("DEBUG Redirecting to user/home");
                 header("Location: /Hotel_Reservation_System/app/public/index.php?controller=home&action=index");
                 exit();
         }

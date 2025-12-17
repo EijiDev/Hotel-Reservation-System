@@ -247,26 +247,23 @@ class StaffController
         exit();
     }
 
-    /**
-     * View Booking History (Archived/Deleted bookings)
-     */
     public function history()
     {
         // Statistics for archived bookings
         $stats = [
             'total_archived' => $this->getValue("SELECT COUNT(*) FROM bookings WHERE IsDeleted = 1"),
             'cancelled_count' => $this->getValue("
-                SELECT COUNT(*) 
-                FROM bookings b
-                JOIN booking_status bs ON b.StatusID = bs.StatusID
-                WHERE b.IsDeleted = 1 AND bs.StatusName = 'cancelled'
-            "),
+            SELECT COUNT(*) 
+            FROM bookings b
+            JOIN booking_status bs ON b.StatusID = bs.StatusID
+            WHERE b.IsDeleted = 1 AND bs.StatusName = 'cancelled'
+        "),
             'completed_count' => $this->getValue("
-                SELECT COUNT(*) 
-                FROM bookings b
-                JOIN booking_status bs ON b.StatusID = bs.StatusID
-                WHERE b.IsDeleted = 1 AND bs.StatusName = 'checked-out'
-            ")
+            SELECT COUNT(*) 
+            FROM bookings b
+            JOIN booking_status bs ON b.StatusID = bs.StatusID
+            WHERE b.IsDeleted = 1 AND bs.StatusName = 'checked-out'
+        ")
         ];
 
         // Pagination
@@ -277,8 +274,34 @@ class StaffController
         $totalArchived = $this->getValue("SELECT COUNT(*) FROM bookings WHERE IsDeleted = 1");
         $totalPages = ceil($totalArchived / $limit);
 
-        // Get archived bookings
-        $archivedBookings = $this->bookingModel->getAllBookings($limit, $offset, true);
+        // ✅ UPDATED: Get archived bookings WITH payment method
+        $query = "
+        SELECT 
+            b.BookingID,
+            b.CheckIn,
+            b.CheckOut,
+            b.Guests,
+            b.CheckIn_Time,
+            u.Name AS GuestName,
+            rt.Name AS RoomType,
+            rt.Price AS room_price,
+            bs.StatusName AS booking_status,
+            p.Status AS payment_status,
+            p.Method AS payment_method
+        FROM bookings b
+        LEFT JOIN useraccounts u ON b.UserID = u.UserID
+        LEFT JOIN rooms r ON b.RoomID = r.RoomID
+        LEFT JOIN roomtypes rt ON r.TypeID = rt.TypeID
+        LEFT JOIN booking_status bs ON b.StatusID = bs.StatusID
+        LEFT JOIN payments p ON b.BookingID = p.BookingID
+        WHERE b.IsDeleted = 1
+        ORDER BY b.Created_At DESC
+        LIMIT ? OFFSET ?
+    ";
+
+        $stmt = $this->db->prepare($query);
+        $stmt->execute([$limit, $offset]);
+        $archivedBookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         include __DIR__ . '/../Views/staff/history.php';
     }

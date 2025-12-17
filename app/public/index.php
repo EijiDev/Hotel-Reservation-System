@@ -37,6 +37,7 @@ use App\Controllers\RoomController;
 use App\Controllers\AdminController;
 use App\Controllers\LogoutController;
 use App\Controllers\StaffController;
+use App\Controllers\GuestController;
 use App\Models\User;
 
 // Database connection
@@ -106,6 +107,20 @@ switch ($controllerName) {
             exit;
         }
         $controller = new StaffController();
+        break;
+
+    case 'guest':
+        // Allow both admin and guest_staff roles
+        error_log("DEBUG: Guest controller accessed. Session user_id: " . ($_SESSION['user_id'] ?? 'NOT SET'));
+        error_log("DEBUG: Session role: " . ($_SESSION['role'] ?? 'NOT SET'));
+        error_log("DEBUG: Full session: " . print_r($_SESSION, true));
+        
+        if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || !in_array($_SESSION['role'], ['admin', 'guest_staff'])) {
+            error_log("❌ Unauthorized guest access attempt. Role: " . ($_SESSION['role'] ?? 'none'));
+            header("Location: /Hotel_Reservation_System/app/public/index.php?controller=login&action=index&error=unauthorized");
+            exit;
+        }
+        $controller = new GuestController();
         break;
 
     case 'logout':

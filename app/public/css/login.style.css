@@ -33,14 +33,14 @@ body {
 /* RIGHT PANEL */
 .login-right {
   flex: 1;
-  background-color: #fff6f6;
+  background-color: white;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
 .login-card {
-  background-color: #ffffff;
+  background-color: white;
   padding: 40px;
   border-radius: 12px;
   width: 400px;

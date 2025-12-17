@@ -3,14 +3,11 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-
-// Authorization check
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
+if (!isset($_SESSION['user_id']) || !in_array($_SESSION['role'], ['admin', 'staff'])) {
     header("Location: /Hotel_Reservation_System/app/public/index.php?controller=login&action=index&error=unauthorized");
     exit;
 }
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -22,7 +19,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     <link rel="stylesheet" href="./css/dashboard.style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" href="../public/assets/Lunera-Logo.png" type="image/ico">
-    <title>Admin Dashboard - Booking History</title>
+    <title>Staff Dashboard - Booking History</title>
 </head>
 
 
@@ -30,15 +27,15 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     <!-- Sidebar -->
     <div class="sidebar">
         <div>
-            <h2><i class="fa-solid fa-hotel"></i> Admin Panel</h2>
+            <h2><i class="fa-solid fa-hotel"></i> Staff Panel</h2>
             <ul>
                 <li class="dashboard-bar">
-                    <a href="/Hotel_Reservation_System/app/public/index.php?controller=admin&action=index" style="color: #fff; text-decoration: none; display: block;">
+                    <a href="/Hotel_Reservation_System/app/public/index.php?controller=staff&action=index" style="color: #fff; text-decoration: none; display: block;">
                         <i class="fa-solid fa-book"></i> Bookings
                     </a>
                 </li>
                 <li class="dashboard-bar">
-                    <a href="/Hotel_Reservation_System/app/public/index.php?controller=admin&action=history" style="color: #fff; text-decoration: none; display: block;">
+                    <a href="/Hotel_Reservation_System/app/public/index.php?controller=staff&action=history" style="color: #fff; text-decoration: none; display: block;">
                         <i class="fa-solid fa-receipt"></i> Booking History
                     </a>
                 </li>
@@ -161,7 +158,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                                 <td><?= htmlspecialchars(ucfirst($paymentMethod)) ?></td> <!-- NEW -->
                                 <td style="text-align: right;">₱<?= number_format($displayTotal, 2) ?></td>
                                 <td class="actions">
-                                    <a href="/Hotel_Reservation_System/app/public/index.php?controller=admin&action=restore&id=<?= $b['BookingID'] ?>"
+                                    <a href="/Hotel_Reservation_System/app/public/index.php?controller=staff&action=restore&id=<?= $b['BookingID'] ?>"
                                         class="btn-confirm"
                                         onclick="return confirm('Restore this booking?')">
                                         Restore
@@ -181,7 +178,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
             <?php if (isset($totalPages) && $totalPages > 1): ?>
                 <div class="pagination">
                     <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-                        <a href="?controller=admin&action=history&page=<?= $i ?>"
+                        <a href="?controller=staff&action=history&page=<?= $i ?>"
                             class="<?= ($i === ($page ?? 1)) ? 'active' : '' ?>">
                             <?= $i ?>
                         </a>
