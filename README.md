@@ -45,8 +45,6 @@ This project allows users to **browse rooms, make bookings, and admins to manage
 I added composer
 ---
 
-## 🚀 Getting Started  
-
 ### ✅ Prerequisites
 Make sure you have installed:  
 - [PHP 8+](https://www.php.net/)  
